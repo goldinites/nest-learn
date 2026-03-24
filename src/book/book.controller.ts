@@ -6,17 +6,19 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { Book } from './book.entity';
+import type { BookGetAllReqDto } from './book.types';
 
 @Controller('book')
 export class BookController {
   constructor(private readonly bookService: BookService) {}
 
   @Get('list')
-  getAll() {
-    return this.bookService.getAll();
+  getAll(@Query() params: BookGetAllReqDto) {
+    return this.bookService.getAll(params);
   }
 
   @Get('get/:id')

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Book } from './book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { BookGetAllReqDto } from './book.types';
 
 @Injectable()
 export class BookService {
@@ -10,8 +11,16 @@ export class BookService {
     private bookRepository: Repository<Book>,
   ) {}
 
-  async getAll(): Promise<Book[]> {
-    return await this.bookRepository.find({ order: { id: 'ASC' } });
+  async getAll(params?: BookGetAllReqDto): Promise<Book[]> {
+    if (!params) return await this.bookRepository.find();
+
+    const { field = 'id', direction = 'ASC', limit, offset } = params;
+
+    return await this.bookRepository.find({
+      order: { [field]: direction },
+      take: limit,
+      skip: offset,
+    });
   }
 
   async find(id: number): Promise<Book | null> {
