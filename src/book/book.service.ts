@@ -24,12 +24,12 @@ export class BookService {
     return await this.getAll();
   }
 
-  async update(payload: Partial<Book>): Promise<Book | null> {
-    if (!payload.id) return null;
+  async update(id: number, payload: Partial<Book>): Promise<Book | null> {
+    if (!id) return null;
 
-    await this.bookRepository.update(payload.id, payload);
+    await this.bookRepository.update(id, payload);
 
-    return await this.find(payload.id);
+    return await this.find(id);
   }
 
   async delete(id: number): Promise<boolean> {

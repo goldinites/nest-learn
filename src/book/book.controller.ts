@@ -19,7 +19,7 @@ export class BookController {
     return this.bookService.getAll();
   }
 
-  @Get(':id')
+  @Get('get/:id')
   find(@Param('id') id: number) {
     return this.bookService.find(id);
   }
@@ -29,9 +29,9 @@ export class BookController {
     return this.bookService.create(payload);
   }
 
-  @Put('update')
-  update(@Body() payload: Partial<Book>) {
-    return this.bookService.update(payload);
+  @Put('update/:id')
+  update(@Param('id') id: number, @Body() payload: Partial<Book>) {
+    return this.bookService.update(id, payload);
   }
 
   @Delete('delete/:id')
