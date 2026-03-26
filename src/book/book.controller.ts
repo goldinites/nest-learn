@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -17,6 +18,18 @@ import { UpdateBookDto } from '@book/dto/update-book.dto';
 @Controller('book')
 export class BookController {
   constructor(private readonly bookService: BookService) {}
+
+  @Post('import')
+  async import(
+    @Body(new ParseArrayPipe({ items: CreateBookDto }))
+    payload: CreateBookDto[],
+  ) {
+    if (payload.length === 0) return;
+
+    for (const book of payload) {
+      await this.bookService.create(book);
+    }
+  }
 
   @Get()
   getList(@Query() params: GetListBookReqDto) {
