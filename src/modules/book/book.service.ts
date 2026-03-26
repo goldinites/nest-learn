@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Book } from '@book/entities/book.entity';
+import { Book } from '@/modules/book/entities/book.entity';
 import { Repository } from 'typeorm';
-import { GetListBookReqDto } from '@book/dto/get-list-book.dto';
-import { getListBooksDefaultParams } from '@book/constants/get-list-book.constants';
-import { BookErrors } from '@book/enums/errors.enum';
-import { CreateBookDto } from '@book/dto/create-book.dto';
-import { UpdateBookDto } from '@book/dto/update-book.dto';
-import { DeleteBookResDto } from '@book/dto/delete-book.dto';
+import { GetListBookReqDto } from '@/modules/book/dto/get-list-book.dto';
+import { getListBooksDefaultParams } from '@/modules/book/constants/get-list-book.constants';
+import { BookErrors } from '@/modules/book/enums/errors.enum';
+import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
+import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
+import { DeleteBookResDto } from '@/modules/book/dto/delete-book.dto';
 
 @Injectable()
 export class BookService {
@@ -34,7 +34,7 @@ export class BookService {
   }
 
   async find(id: number): Promise<Book | null> {
-    const book = await this.bookRepository.findOneBy({ id });
+    const book: Book | null = await this.bookRepository.findOneBy({ id });
 
     if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
 
@@ -42,7 +42,7 @@ export class BookService {
   }
 
   async create(payload: CreateBookDto): Promise<Book> {
-    const book = this.bookRepository.create(payload);
+    const book: Book = this.bookRepository.create(payload);
 
     if (!book) throw new BadRequestException(BookErrors.NOT_CREATED);
 
@@ -52,9 +52,9 @@ export class BookService {
   async update(id: number, payload: UpdateBookDto): Promise<Book | null> {
     await this.find(id);
 
-    const updated = await this.bookRepository.update(id, payload);
+    const { affected } = await this.bookRepository.update(id, payload);
 
-    if (updated.affected === 0) {
+    if (affected === 0) {
       throw new BadRequestException(BookErrors.NOT_UPDATED);
     }
 

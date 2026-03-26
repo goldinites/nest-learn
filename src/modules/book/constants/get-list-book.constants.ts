@@ -1,4 +1,4 @@
-import { GetListBookReqDto } from '@book/dto/get-list-book.dto';
+import { GetListBookReqDto } from '@/modules/book/dto/get-list-book.dto';
 
 export const getListBooksDefaultParams: Required<GetListBookReqDto> = {
   field: 'id',

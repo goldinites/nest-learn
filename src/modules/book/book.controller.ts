@@ -10,10 +10,10 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { BookService } from '@book/book.service';
-import { GetListBookReqDto } from '@book/dto/get-list-book.dto';
-import { CreateBookDto } from '@book/dto/create-book.dto';
-import { UpdateBookDto } from '@book/dto/update-book.dto';
+import { BookService } from '@/modules/book/book.service';
+import { GetListBookReqDto } from '@/modules/book/dto/get-list-book.dto';
+import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
+import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
 
 @Controller('book')
 export class BookController {
