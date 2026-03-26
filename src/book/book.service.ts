@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { BookGetAllReqDto } from './dto/get-all.dto';
 import { DeleteBookResDto } from './dto/delete.dto';
 import { BookErrors } from './enums/errors.enum';
-import { getAllBooksDefaults } from './constants/get-all.contants';
+import { getAllBooksDefaultsReq } from './constants/get-all.contants';
 
 @Injectable()
 export class BookService {
@@ -20,7 +20,7 @@ export class BookService {
 
   async getList(params?: BookGetAllReqDto): Promise<Book[]> {
     const { field, direction, limit, offset } = {
-      ...getAllBooksDefaults,
+      ...getAllBooksDefaultsReq,
       ...params,
     };
 

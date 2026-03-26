@@ -1,6 +1,6 @@
 import { BookGetAllReqDto } from '../dto/get-all.dto';
 
-export const getAllBooksDefaults: Required<BookGetAllReqDto> = {
+export const getAllBooksDefaultsReq: Required<BookGetAllReqDto> = {
   field: 'id',
   direction: 'ASC',
   limit: 25,
