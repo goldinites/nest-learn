@@ -1,3 +1,46 @@
-import { Book } from '../entities/book.entity';
+import { Type } from 'class-transformer';
+import {
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Min,
+  Max,
+} from 'class-validator';
 
-export type CreateBookDto = Omit<Book, 'id'>;
+export class CreateBookDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  author: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(9999)
+  publishedYear: number;
+
+  @IsString()
+  genre: string;
+
+  @IsString()
+  language: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  stockCount: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  rating?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  price?: number | null;
+}

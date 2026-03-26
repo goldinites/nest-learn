@@ -1,17 +1,17 @@
 import {
   BadRequestException,
-  NotFoundException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { Book } from './entities/book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Book } from '@book/entities/book.entity';
 import { Repository } from 'typeorm';
-import { GetListBookReqDto } from './dto/get-list-book.dto';
-import { DeleteBookResDto } from './dto/delete-book.dto';
-import { BookErrors } from './enums/errors.enum';
-import { getListBooksDefaultParams } from './constants/get-list-book.constants';
-import type { CreateBookDto } from './dto/create-book.dto';
-import type { UpdateBookDto } from './dto/update-book.dto';
+import { GetListBookReqDto } from '@book/dto/get-list-book.dto';
+import { getListBooksDefaultParams } from '@book/constants/get-list-book.constants';
+import { BookErrors } from '@book/enums/errors.enum';
+import { CreateBookDto } from '@book/dto/create-book.dto';
+import { UpdateBookDto } from '@book/dto/update-book.dto';
+import { DeleteBookResDto } from '@book/dto/delete-book.dto';
 
 @Injectable()
 export class BookService {
@@ -34,35 +34,42 @@ export class BookService {
   }
 
   async find(id: number): Promise<Book | null> {
-    if (!id) throw new NotFoundException(BookErrors.NOT_FOUND);
+    const book = await this.bookRepository.findOneBy({ id });
 
-    return await this.bookRepository.findOneBy({ id });
+    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+    return book;
   }
 
   async create(payload: CreateBookDto): Promise<Book> {
-    if (!payload) throw new BadRequestException(BookErrors.NOT_CREATED);
+    const book = this.bookRepository.create(payload);
 
-    return await this.bookRepository.save(payload);
+    if (!book) throw new BadRequestException(BookErrors.NOT_CREATED);
+
+    return await this.bookRepository.save(book);
   }
 
   async update(id: number, payload: UpdateBookDto): Promise<Book | null> {
-    if (!id) throw new NotFoundException(BookErrors.NOT_FOUND);
+    await this.find(id);
 
     const updated = await this.bookRepository.update(id, payload);
 
-    if (updated.affected === 0)
+    if (updated.affected === 0) {
       throw new BadRequestException(BookErrors.NOT_UPDATED);
+    }
 
     return await this.find(id);
   }
 
   async delete(id: number): Promise<DeleteBookResDto> {
-    if (!id) throw new NotFoundException(BookErrors.NOT_FOUND);
+    await this.find(id);
 
     const { affected } = await this.bookRepository.delete(id);
 
-    if (!affected) throw new BadRequestException(BookErrors.NOT_DELETED);
+    if (!affected) {
+      throw new BadRequestException(BookErrors.NOT_DELETED);
+    }
 
-    return { success: affected > 0 };
+    return { success: true };
   }
 }

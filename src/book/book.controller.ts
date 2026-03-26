@@ -5,14 +5,14 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
-import { BookService } from './book.service';
-import type { GetListBookReqDto } from './dto/get-list-book.dto';
-import type { CreateBookDto } from './dto/create-book.dto';
-import type { UpdateBookDto } from './dto/update-book.dto';
+import { BookService } from '@book/book.service';
+import { GetListBookReqDto } from '@book/dto/get-list-book.dto';
+import { CreateBookDto } from '@book/dto/create-book.dto';
+import { UpdateBookDto } from '@book/dto/update-book.dto';
 
 @Controller('book')
 export class BookController {
@@ -23,7 +23,7 @@ export class BookController {
     return this.bookService.getList(params);
   }
 
-  @Get('/:id')
+  @Get(':id')
   find(@Param('id', ParseIntPipe) id: number) {
     return this.bookService.find(id);
   }
@@ -33,7 +33,7 @@ export class BookController {
     return this.bookService.create(payload);
   }
 
-  @Put('/:id')
+  @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateBookDto,
@@ -41,7 +41,7 @@ export class BookController {
     return this.bookService.update(id, payload);
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.bookService.delete(id);
   }
