@@ -19,18 +19,6 @@ import { UpdateBookDto } from '@book/dto/update-book.dto';
 export class BookController {
   constructor(private readonly bookService: BookService) {}
 
-  @Post('import')
-  async import(
-    @Body(new ParseArrayPipe({ items: CreateBookDto }))
-    payload: CreateBookDto[],
-  ) {
-    if (payload.length === 0) return;
-
-    for (const book of payload) {
-      await this.bookService.create(book);
-    }
-  }
-
   @Get()
   getList(@Query() params: GetListBookReqDto) {
     return this.bookService.getList(params);
@@ -44,6 +32,18 @@ export class BookController {
   @Post()
   create(@Body() payload: CreateBookDto) {
     return this.bookService.create(payload);
+  }
+
+  @Post('import')
+  async import(
+    @Body(new ParseArrayPipe({ items: CreateBookDto }))
+    payload: CreateBookDto[],
+  ) {
+    if (payload.length === 0) return;
+
+    for (const book of payload) {
+      await this.bookService.create(book);
+    }
   }
 
   @Patch(':id')
