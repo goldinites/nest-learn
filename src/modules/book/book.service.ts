@@ -11,7 +11,7 @@ import { getListBooksDefaultParams } from '@/modules/book/constants/get-list-boo
 import { BookErrors } from '@/modules/book/enums/errors.enum';
 import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
 import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
-import { DeleteBookResDto } from '@/modules/book/dto/delete-book.dto';
+import { DeleteBookResponse } from '@/modules/book/types/delete-book.type';
 
 @Injectable()
 export class BookService {
@@ -61,7 +61,7 @@ export class BookService {
     return await this.find(id);
   }
 
-  async delete(id: number): Promise<DeleteBookResDto> {
+  async delete(id: number): Promise<DeleteBookResponse> {
     await this.find(id);
 
     const { affected } = await this.bookRepository.delete(id);
