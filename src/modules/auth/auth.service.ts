@@ -12,6 +12,7 @@ import { RegisterDto } from '@/modules/auth/dto/register.dto';
 import { SafeUser } from '@/modules/auth/types/register.type';
 import { AuthErrors } from '@/modules/auth/enums/errors.enum';
 import { getSafeUser } from '@/modules/auth/utils/get-safe-user';
+import { TokenPayload } from '@/modules/auth/types/token-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -49,7 +50,11 @@ export class AuthService {
 
     if (!isMatch) throw new UnauthorizedException();
 
-    const tokenPayload = { sub: user.id, email: user.email, role: user.role };
+    const tokenPayload: TokenPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
 
     return {
       accessToken: await this.jwtService.signAsync(tokenPayload),

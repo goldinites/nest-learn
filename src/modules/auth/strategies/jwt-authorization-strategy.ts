@@ -4,11 +4,12 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { AuthUser } from '@/modules/auth/types/auth-user.type';
 import { ConfigService } from '@nestjs/config';
 import { AuthErrors } from '@/modules/auth/enums/errors.enum';
+import { TokenPayload } from '@/modules/auth/types/token-payload.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly configService: ConfigService) {
-    const secret = configService.get<string>('JWT_SECRET');
+    const secret: string | undefined = configService.get<string>('JWT_SECRET');
 
     if (!secret) throw new Error(AuthErrors.SECRET_KEY_NOT_DEFINED);
 
@@ -19,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  validate(payload: { sub: number; email: string; role: string }): AuthUser {
+  validate(payload: TokenPayload): AuthUser {
     return {
       userId: payload.sub,
       email: payload.email,
