@@ -14,18 +14,18 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.userRepository.findOneBy({ email });
-  }
-
   async findById(id: number): Promise<User | null> {
     return await this.userRepository.findOneBy({ id });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.userRepository.findOneBy({ email });
   }
 
   async create(payload: CreateUserDto): Promise<User> {
     const user: User = this.userRepository.create(payload);
 
-    const created: User = await this.userRepository.save(user);
+    const created: User | null = await this.userRepository.save(user);
 
     if (!created) throw new BadRequestException(UserErrors.NOT_CREATED);
 

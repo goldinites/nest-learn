@@ -15,7 +15,9 @@ import { CreateUserDto } from '@/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from '@/modules/user/dto/update-user.dto';
 import { DeleteUserResponse } from '@/modules/user/types/delete-user.type';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { Permissions } from '@/modules/auth/decorators/permissions.decorator';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+import { Roles } from '@/modules/user/enums/roles.enum';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('user')
@@ -33,11 +35,13 @@ export class UserController {
   }
 
   @Post()
+  @Permissions(Roles.ADMIN)
   create(@Body() payload: CreateUserDto): Promise<User> {
     return this.userService.create(payload);
   }
 
   @Patch(':id')
+  @Permissions(Roles.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateUserDto,
@@ -46,6 +50,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Permissions(Roles.ADMIN)
   delete(@Param('id', ParseIntPipe) id: number): Promise<DeleteUserResponse> {
     return this.userService.delete(id);
   }

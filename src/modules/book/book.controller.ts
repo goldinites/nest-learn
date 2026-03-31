@@ -23,7 +23,6 @@ import { Permissions } from '@/modules/auth/decorators/permissions.decorator';
 import { Roles } from '@/modules/user/enums/roles.enum';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Permissions(Roles.ADMIN)
 @Controller('book')
 export class BookController {
   constructor(private readonly bookService: BookService) {}
@@ -39,11 +38,13 @@ export class BookController {
   }
 
   @Post()
+  @Permissions(Roles.ADMIN)
   create(@Body() payload: CreateBookDto): Promise<Book> {
     return this.bookService.create(payload);
   }
 
   @Post('import')
+  @Permissions(Roles.ADMIN)
   async import(
     @Body(new ParseArrayPipe({ items: CreateBookDto }))
     payload: CreateBookDto[],
@@ -54,6 +55,7 @@ export class BookController {
   }
 
   @Patch(':id')
+  @Permissions(Roles.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateBookDto,
@@ -62,6 +64,7 @@ export class BookController {
   }
 
   @Delete(':id')
+  @Permissions(Roles.ADMIN)
   delete(@Param('id', ParseIntPipe) id: number): Promise<DeleteBookResponse> {
     return this.bookService.delete(id);
   }

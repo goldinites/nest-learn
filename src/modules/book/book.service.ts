@@ -42,7 +42,7 @@ export class BookService {
   }
 
   async create(payload: CreateBookDto): Promise<Book> {
-    const book: Book = this.bookRepository.create(payload);
+    const book: Book | null = this.bookRepository.create(payload);
 
     if (!book) throw new BadRequestException(BookErrors.NOT_CREATED);
 
