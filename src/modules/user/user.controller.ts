@@ -33,13 +33,13 @@ export class UserController {
   }
 
   @Get()
-  find(@Query() query?: GetUserReqDto): Promise<User[]> {
+  find(@Query() query: GetUserReqDto): Promise<User[]> {
     return this.userService.find(query);
   }
 
   @Post()
   @Permissions(Roles.ADMIN)
-  create(@Body() payload: CreateUserDto): Promise<User> {
+  create(@Body() payload: CreateUserDto): Promise<SafeUser> {
     return this.userService.create(payload);
   }
 

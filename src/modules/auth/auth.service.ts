@@ -25,21 +25,14 @@ export class AuthService {
   ) {}
 
   async register(payload: RegisterDto): Promise<SafeUser> {
-    const existingUser: User | null = await this.userService
-      .findOne({ email: payload.email })
-      .catch(() => null);
+    const existingUser: User | null = await this.userService.findOne({
+      email: payload.email,
+    });
 
     if (existingUser)
       throw new ConflictException(AuthErrors.USER_ALREADY_EXISTS);
 
-    const hashedPassword: string = await argon2.hash(payload.password);
-
-    const user: User = await this.userService.create({
-      ...payload,
-      password: hashedPassword,
-    });
-
-    return getSafeUser(user);
+    return await this.userService.create(payload);
   }
 
   async signIn(payload: SignInDto): Promise<SignInResponse> {

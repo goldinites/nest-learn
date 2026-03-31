@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from '@/modules/book/entities/book.entity';
 import { Repository } from 'typeorm';
@@ -30,16 +34,12 @@ export class BookService {
     });
   }
 
-  async findOne(query?: GetBookReqDto): Promise<Book | null> {
-    const books: Book[] = await this.find(query);
-
-    return books[0] ?? null;
+  async findOne(query: GetBookReqDto): Promise<Book | null> {
+    return await this.bookRepository.findOneBy(query);
   }
 
   async create(payload: CreateBookDto): Promise<Book> {
     const book: Book | null = this.bookRepository.create(payload);
-
-    if (!book) throw new BadRequestException(BookErrors.NOT_CREATED);
 
     return await this.bookRepository.save(book);
   }
@@ -53,17 +53,25 @@ export class BookService {
   }
 
   async update(id: number, payload: UpdateBookDto): Promise<Book | null> {
-    await this.findOne({ id });
+    const book: Book | null = await this.findOne({ id });
+
+    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
 
     const { affected } = await this.bookRepository.update(id, payload);
 
     if (affected === 0) throw new BadRequestException(BookErrors.NOT_UPDATED);
 
-    return await this.findOne({ id });
+    const updated: Book | null = await this.findOne({ id });
+
+    if (!updated) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+    return updated;
   }
 
   async delete(id: number): Promise<DeleteBookResponse> {
-    await this.findOne({ id });
+    const book: Book | null = await this.findOne({ id });
+
+    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
 
     const { affected } = await this.bookRepository.delete(id);
 

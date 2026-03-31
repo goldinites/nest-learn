@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '@/modules/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +14,7 @@ import { GetUserReqDto } from '@/modules/user/dto/get-user.dto';
 import { getSafeUser } from '@/modules/auth/utils/get-safe-user';
 import { SafeUser } from '@/modules/auth/types/register.type';
 import { getUserDefaultParams } from '@/modules/user/constants/get-user.constants';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -33,23 +38,26 @@ export class UserService {
   }
 
   async findOne(params: GetUserReqDto): Promise<User | null> {
-    const users: User[] = await this.find(params);
-
-    return users[0] ?? null;
+    return await this.userRepository.findOneBy(params);
   }
 
-  async create(payload: CreateUserDto): Promise<User> {
-    const user: User = this.userRepository.create(payload);
+  async create(payload: CreateUserDto): Promise<SafeUser> {
+    const hashedPassword: string = await argon2.hash(payload.password);
+
+    const user: User = this.userRepository.create({
+      ...payload,
+      password: hashedPassword,
+    });
 
     const created: User | null = await this.userRepository.save(user);
 
-    if (!created) throw new BadRequestException(UserErrors.NOT_CREATED);
-
-    return created;
+    return getSafeUser(created);
   }
 
   async update(id: number, payload: UpdateUserDto): Promise<SafeUser | null> {
-    await this.find({ id });
+    const user: User | null = await this.findOne({ id });
+
+    if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
     const { affected } = await this.userRepository.update(id, payload);
 
@@ -57,13 +65,15 @@ export class UserService {
 
     const updated: User | null = await this.findOne({ id });
 
-    if (!updated) return null;
+    if (!updated) throw new NotFoundException(UserErrors.NOT_FOUND);
 
     return getSafeUser(updated);
   }
 
   async delete(id: number): Promise<DeleteUserResponse> {
-    await this.find({ id });
+    const user: User | null = await this.findOne({ id });
+
+    if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
     const { affected } = await this.userRepository.delete(id);
 
