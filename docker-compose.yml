@@ -3,11 +3,11 @@ services:
     image: postgres:16-alpine
     container_name: nest_learn_postgres
     ports:
-      - "5433:5432"
+      - "${DB_PORT}:5432"
     environment:
-      POSTGRES_DB: nest-learn
-      POSTGRES_USER: 'root'
-      POSTGRES_PASSWORD: '123456'
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
 
