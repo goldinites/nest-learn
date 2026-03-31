@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BookService } from '@/modules/book/book.service';
-import { GetListBookReqDto } from '@/modules/book/dto/get-list-book.dto';
+import { GetBookReqDto } from '@/modules/book/dto/get-list-book.dto';
 import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
 import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
 import { Book } from '@/modules/book/entities/book.entity';
@@ -27,14 +27,14 @@ import { Roles } from '@/modules/user/enums/roles.enum';
 export class BookController {
   constructor(private readonly bookService: BookService) {}
 
-  @Get()
-  getList(@Query() params: GetListBookReqDto): Promise<Book[]> {
-    return this.bookService.getList(params);
+  @Get(':id')
+  findById(@Param('id', ParseIntPipe) id: number): Promise<Book | null> {
+    return this.bookService.findOne({ id });
   }
 
-  @Get(':id')
-  find(@Param('id', ParseIntPipe) id: number): Promise<Book> {
-    return this.bookService.find(id);
+  @Get()
+  find(@Query() query: GetBookReqDto): Promise<Book[]> {
+    return this.bookService.find(query);
   }
 
   @Post()
@@ -59,7 +59,7 @@ export class BookController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateBookDto,
-  ): Promise<Book> {
+  ): Promise<Book | null> {
     return this.bookService.update(id, payload);
   }
 

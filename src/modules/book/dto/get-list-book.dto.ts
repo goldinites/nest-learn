@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 import type { FindOptionsOrderValue } from 'typeorm';
 
-export const BOOK_SORT_FIELDS = [
+export const BOOK_SORT_FIELDS: string[] = [
   'id',
   'title',
   'author',
@@ -16,7 +16,43 @@ export const BOOK_SORT_FIELDS = [
 
 export type BookSortField = (typeof BOOK_SORT_FIELDS)[number];
 
-export class GetListBookReqDto {
+export class GetBookReqDto {
+  @IsOptional()
+  @Type(() => Number)
+  id?: number;
+
+  @IsOptional()
+  @Type(() => String)
+  title?: string;
+
+  @IsOptional()
+  @Type(() => String)
+  author?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  publishedYear?: number;
+
+  @IsOptional()
+  @Type(() => String)
+  genre?: string;
+
+  @IsOptional()
+  @Type(() => String)
+  language?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(5)
+  rating?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  price?: number;
+
   @IsOptional()
   @IsIn(BOOK_SORT_FIELDS)
   field?: BookSortField;

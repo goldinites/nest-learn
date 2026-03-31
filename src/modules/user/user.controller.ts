@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from '@/modules/user/user.service';
@@ -18,20 +19,22 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { Permissions } from '@/modules/auth/decorators/permissions.decorator';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
 import { Roles } from '@/modules/user/enums/roles.enum';
+import { GetUserReqDto } from '@/modules/user/dto/get-user.dto';
+import { SafeUser } from '@/modules/auth/types/register.type';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('get-by-id/:id')
+  @Get(':id')
   findById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
-    return this.userService.findById(id);
+    return this.userService.findOne({ id });
   }
 
-  @Get('get-by-email/:email')
-  findByEmail(@Param('email') email: string): Promise<User | null> {
-    return this.userService.findByEmail(email);
+  @Get()
+  find(@Query() query?: GetUserReqDto): Promise<User[]> {
+    return this.userService.find(query);
   }
 
   @Post()
@@ -41,16 +44,14 @@ export class UserController {
   }
 
   @Patch(':id')
-  @Permissions(Roles.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateUserDto,
-  ): Promise<User | null> {
+  ): Promise<SafeUser | null> {
     return this.userService.update(id, payload);
   }
 
   @Delete(':id')
-  @Permissions(Roles.ADMIN)
   delete(@Param('id', ParseIntPipe) id: number): Promise<DeleteUserResponse> {
     return this.userService.delete(id);
   }

@@ -1,12 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from '@/modules/book/entities/book.entity';
 import { Repository } from 'typeorm';
-import { GetListBookReqDto } from '@/modules/book/dto/get-list-book.dto';
+import { GetBookReqDto } from '@/modules/book/dto/get-list-book.dto';
 import { getListBooksDefaultParams } from '@/modules/book/constants/get-list-book.constants';
 import { BookErrors } from '@/modules/book/enums/errors.enum';
 import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
@@ -20,25 +16,24 @@ export class BookService {
     private bookRepository: Repository<Book>,
   ) {}
 
-  async getList(params?: GetListBookReqDto): Promise<Book[]> {
-    const { field, direction, limit, offset } = {
+  async find(query?: GetBookReqDto): Promise<Book[]> {
+    const { field, direction, limit, offset, ...where } = {
       ...getListBooksDefaultParams,
-      ...params,
+      ...query,
     };
 
     return await this.bookRepository.find({
+      where,
       order: { [field]: direction },
       take: limit,
       skip: offset,
     });
   }
 
-  async find(id: number): Promise<Book> {
-    const book: Book | null = await this.bookRepository.findOneBy({ id });
+  async findOne(query?: GetBookReqDto): Promise<Book | null> {
+    const books: Book[] = await this.find(query);
 
-    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
-
-    return book;
+    return books[0] ?? null;
   }
 
   async create(payload: CreateBookDto): Promise<Book> {
@@ -57,18 +52,18 @@ export class BookService {
     return await this.bookRepository.save(books);
   }
 
-  async update(id: number, payload: UpdateBookDto): Promise<Book> {
-    await this.find(id);
+  async update(id: number, payload: UpdateBookDto): Promise<Book | null> {
+    await this.findOne({ id });
 
     const { affected } = await this.bookRepository.update(id, payload);
 
     if (affected === 0) throw new BadRequestException(BookErrors.NOT_UPDATED);
 
-    return await this.find(id);
+    return await this.findOne({ id });
   }
 
   async delete(id: number): Promise<DeleteBookResponse> {
-    await this.find(id);
+    await this.findOne({ id });
 
     const { affected } = await this.bookRepository.delete(id);
 

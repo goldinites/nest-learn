@@ -26,7 +26,7 @@ export class AuthService {
 
   async register(payload: RegisterDto): Promise<SafeUser> {
     const existingUser: User | null = await this.userService
-      .findByEmail(payload.email)
+      .findOne({ email: payload.email })
       .catch(() => null);
 
     if (existingUser)
@@ -43,7 +43,9 @@ export class AuthService {
   }
 
   async signIn(payload: SignInDto): Promise<SignInResponse> {
-    const user: User | null = await this.userService.findByEmail(payload.email);
+    const user: User | null = await this.userService.findOne({
+      email: payload.email,
+    });
 
     if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
@@ -66,7 +68,7 @@ export class AuthService {
   }
 
   async me(id: number): Promise<SafeUser> {
-    const user: User | null = await this.userService.findById(id);
+    const user: User | null = await this.userService.findOne({ id });
 
     if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
