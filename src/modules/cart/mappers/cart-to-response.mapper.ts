@@ -18,9 +18,7 @@ export function mapCartToDto(cart: Cart): CartResponse {
 
   return {
     id: cart.id,
-    userId: cart.user.id,
     items,
-    totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
     totalPrice: items.reduce(
       (sum, item) => sum + item.quantity * (item.price ?? 0),
       0,
