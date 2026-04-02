@@ -5,24 +5,26 @@ import { RegisterDto } from '@/modules/auth/dto/register.dto';
 import { CurrentUser } from '@/modules/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import type { AuthUser } from '@/modules/auth/types/auth-user.type';
+import { UserResponse } from '@/modules/user/types/user.type';
+import { SignInResponse } from '@/modules/auth/types/sign-in.type';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  register(@Body() payload: RegisterDto) {
-    return this.authService.register(payload);
+  async register(@Body() payload: RegisterDto): Promise<UserResponse> {
+    return await this.authService.register(payload);
   }
 
   @Post('login')
-  signIn(@Body() payload: SignInDto) {
-    return this.authService.signIn(payload);
+  async signIn(@Body() payload: SignInDto): Promise<SignInResponse> {
+    return await this.authService.signIn(payload);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@CurrentUser() { userId }: AuthUser) {
-    return this.authService.me(userId);
+  async me(@CurrentUser() { userId }: AuthUser): Promise<UserResponse> {
+    return await this.authService.me(userId);
   }
 }

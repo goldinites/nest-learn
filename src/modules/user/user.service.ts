@@ -7,12 +7,9 @@ import { Repository } from 'typeorm';
 import { User } from '@/modules/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserErrors } from '@/modules/user/enums/errors.enum';
-import type { DeleteUserResponse } from '@/modules/user/types/delete-user.type';
 import type { CreateUserDto } from '@/modules/user/dto/create-user.dto';
 import type { UpdateUserDto } from '@/modules/user/dto/update-user.dto';
 import { GetUserReqDto } from '@/modules/user/dto/get-user.dto';
-import { getSafeUser } from '@/modules/auth/utils/get-safe-user';
-import { SafeUser } from '@/modules/auth/types/register.type';
 import { getUserDefaultParams } from '@/modules/user/constants/get-user.constants';
 import * as argon2 from 'argon2';
 
@@ -45,7 +42,7 @@ export class UserService {
     return await this.userRepository.findOneBy({ email });
   }
 
-  async create(payload: CreateUserDto): Promise<SafeUser> {
+  async create(payload: CreateUserDto): Promise<User> {
     const hashedPassword: string = await argon2.hash(payload.password);
 
     const user: User = this.userRepository.create({
@@ -53,12 +50,10 @@ export class UserService {
       password: hashedPassword,
     });
 
-    const created: User | null = await this.userRepository.save(user);
-
-    return getSafeUser(created);
+    return await this.userRepository.save(user);
   }
 
-  async update(id: number, payload: UpdateUserDto): Promise<SafeUser | null> {
+  async update(id: number, payload: UpdateUserDto): Promise<User | null> {
     const user: User | null = await this.findById(id);
 
     if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
@@ -71,16 +66,14 @@ export class UserService {
 
     if (!updated) throw new NotFoundException(UserErrors.NOT_FOUND);
 
-    return getSafeUser(updated);
+    return updated;
   }
 
-  async delete(id: number): Promise<DeleteUserResponse> {
+  async delete(id: number): Promise<void> {
     const user: User | null = await this.findById(id);
 
     if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
     await this.userRepository.remove(user);
-
-    return { success: true };
   }
 }

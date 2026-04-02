@@ -11,7 +11,6 @@ import { getBookDefaultParams } from '@/modules/book/constants/get-book.constant
 import { BookErrors } from '@/modules/book/enums/errors.enum';
 import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
 import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
-import { DeleteBookResponse } from '@/modules/book/types/delete-book.type';
 import { normalizeQueryWhere } from '@/modules/utils/normalize-query-where';
 
 @Injectable()
@@ -76,13 +75,11 @@ export class BookService {
     return updated;
   }
 
-  async delete(id: number): Promise<DeleteBookResponse> {
+  async delete(id: number): Promise<void> {
     const book: Book | null = await this.findById(id);
 
     if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
 
     await this.bookRepository.remove(book);
-
-    return { success: true };
   }
 }

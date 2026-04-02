@@ -29,11 +29,11 @@ export class Book {
   @Column({ default: 0 })
   stockCount: number;
 
-  @Column({ type: 'numeric', precision: 3, scale: 1, nullable: true })
-  rating: number | null;
+  @Column({ type: 'numeric', precision: 3, scale: 1, default: 0 })
+  rating: number;
 
-  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
-  price: number | null;
+  @Column({ type: 'numeric', precision: 10, scale: 2, default: 0 })
+  price: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -16,6 +16,12 @@ import { CartService } from '@/modules/cart/cart.service';
 import { Cart } from '@/modules/cart/entities/cart.entity';
 import { CartErrors } from '@/modules/cart/enums/errors.enum';
 import { AddToCartDto } from '@/modules/cart/dto/add-to-cart.dto';
+import {
+  mapCartItemToDto,
+  mapCartToDto,
+} from '@/modules/cart/mappers/cart-to-response.mapper';
+import { CartResponse } from '@/modules/cart/types/cart.type';
+import { CartItemResponse } from '@/modules/cart/types/cart-item.type';
 import { CartItem } from '@/modules/cart/entities/cart-item.entity';
 
 @UseGuards(JwtAuthGuard)
@@ -24,27 +30,32 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
-  async getCart(@CurrentUser() { userId }: AuthUser): Promise<Cart> {
+  async getCart(@CurrentUser() { userId }: AuthUser): Promise<CartResponse> {
     const cart: Cart | null = await this.cartService.getCart(userId);
 
     if (!cart) throw new NotFoundException(CartErrors.NOT_FOUND);
 
-    return cart;
+    return mapCartToDto(cart);
   }
 
   @Get('count')
   async getCartItemsCount(
     @CurrentUser() { userId }: AuthUser,
   ): Promise<number> {
-    return this.cartService.getCartItemsCount(userId);
+    return await this.cartService.getCartItemsCount(userId);
   }
 
   @Post('items')
   async addItemToCart(
     @CurrentUser() { userId }: AuthUser,
     @Body() payload: AddToCartDto,
-  ): Promise<CartItem> {
-    return this.cartService.addItemToCart(userId, payload);
+  ): Promise<CartItemResponse> {
+    const item: CartItem = await this.cartService.addItemToCart(
+      userId,
+      payload,
+    );
+
+    return mapCartItemToDto(item);
   }
 
   @Delete('items/:bookId')
@@ -52,11 +63,11 @@ export class CartController {
     @CurrentUser() { userId }: AuthUser,
     @Param('bookId', ParseIntPipe) bookId: number,
   ): Promise<void> {
-    return this.cartService.deleteItemFromCart(userId, bookId);
+    return await this.cartService.deleteItemFromCart(userId, bookId);
   }
 
   @Delete()
   async deleteCart(@CurrentUser() { userId }: AuthUser): Promise<void> {
-    return this.cartService.deleteCart(userId);
+    return await this.cartService.deleteCart(userId);
   }
 }
