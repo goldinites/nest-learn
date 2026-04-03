@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '@/modules/auth/auth.service';
 import { SignInDto } from '@/modules/auth/dto/sign-in.dto';
 import { RegisterDto } from '@/modules/auth/dto/register.dto';
@@ -9,6 +17,7 @@ import { UserResponse } from '@/modules/user/types/user.type';
 import { SignInResponse } from '@/modules/auth/types/sign-in.type';
 import { RefreshTokenDto } from '@/modules/auth/dto/refresh-token.dto';
 import { AuthTokens } from '@/modules/auth/types/auth-tokens.type';
+import { UpdateUserDto } from '@/modules/user/dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -36,7 +45,22 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async me(@CurrentUser() { userId }: AuthUser): Promise<UserResponse> {
-    return await this.authService.me(userId);
+  async getMe(@CurrentUser() { userId }: AuthUser): Promise<UserResponse> {
+    return await this.authService.getMe(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  async updateMe(
+    @CurrentUser() { userId, role }: AuthUser,
+    @Body() payload: UpdateUserDto,
+  ): Promise<UserResponse> {
+    return await this.authService.updateMe(userId, role, payload);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('me')
+  async deleteMe(@CurrentUser() { userId }: AuthUser): Promise<void> {
+    return await this.authService.deleteMe(userId);
   }
 }

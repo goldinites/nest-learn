@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   ParseArrayPipe,
   ParseIntPipe,
@@ -25,6 +27,7 @@ import {
   mapBooksToResponse,
   mapBookToResponse,
 } from '@/modules/book/mappers/book-to-response.mapper';
+import { BookErrors } from '@/modules/book/enums/errors.enum';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('book')
@@ -32,12 +35,10 @@ export class BookController {
   constructor(private readonly bookService: BookService) {}
 
   @Get(':id')
-  async findById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<BookResponse | null> {
+  async findById(@Param('id', ParseIntPipe) id: number): Promise<BookResponse> {
     const book: Book | null = await this.bookService.findById(id);
 
-    if (!book) return null;
+    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
 
     return mapBookToResponse(book);
   }
@@ -77,10 +78,10 @@ export class BookController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateBookDto,
-  ): Promise<BookResponse | null> {
+  ): Promise<BookResponse> {
     const book: Book | null = await this.bookService.update(id, payload);
 
-    if (!book) return null;
+    if (!book) throw new BadRequestException(BookErrors.NOT_UPDATED);
 
     return mapBookToResponse(book);
   }

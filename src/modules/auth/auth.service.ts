@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -23,6 +24,8 @@ import { RefreshTokenDto } from '@/modules/auth/dto/refresh-token.dto';
 import { parseTtlToSeconds } from '@/modules/utils/parse-ttl-to-seconds';
 import { ConfigService } from '@nestjs/config';
 import { DEFAULT_REFRESH_TOKEN_TTL } from '@/modules/app/constants/app.constants';
+import { UpdateUserDto } from '@/modules/user/dto/update-user.dto';
+import { Roles } from '@/modules/user/enums/roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -144,11 +147,27 @@ export class AuthService {
     }
   }
 
-  async me(id: number): Promise<UserResponse> {
+  async getMe(id: number): Promise<UserResponse> {
     const user: User | null = await this.userService.findById(id);
 
     if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
     return mapUserToResponse(user);
+  }
+
+  async updateMe(
+    id: number,
+    role: Roles,
+    payload: UpdateUserDto,
+  ): Promise<UserResponse> {
+    const user: User | null = await this.userService.update(id, payload, role);
+
+    if (!user) throw new BadRequestException(UserErrors.NOT_UPDATED);
+
+    return mapUserToResponse(user);
+  }
+
+  async deleteMe(id: number): Promise<void> {
+    await this.userService.delete(id);
   }
 }

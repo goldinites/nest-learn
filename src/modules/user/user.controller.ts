@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -24,8 +26,10 @@ import {
   mapUsersToResponse,
   mapUserToResponse,
 } from '@/modules/user/mappers/user-to-response.mapper';
+import { UserErrors } from '@/modules/user/enums/errors.enum';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Permissions(Roles.ADMIN)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -36,7 +40,7 @@ export class UserController {
   ): Promise<UserResponse | null> {
     const user: User | null = await this.userService.findById(id);
 
-    if (!user) return null;
+    if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
 
     return mapUserToResponse(user);
   }
@@ -49,7 +53,6 @@ export class UserController {
   }
 
   @Post()
-  @Permissions(Roles.ADMIN)
   async create(@Body() payload: CreateUserDto): Promise<UserResponse> {
     const user: User = await this.userService.create(payload);
 
@@ -61,9 +64,13 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateUserDto,
   ): Promise<UserResponse | null> {
-    const user: User | null = await this.userService.update(id, payload);
+    const user: User | null = await this.userService.update(
+      id,
+      payload,
+      Roles.ADMIN,
+    );
 
-    if (!user) return null;
+    if (!user) throw new BadRequestException(UserErrors.NOT_UPDATED);
 
     return mapUserToResponse(user);
   }
