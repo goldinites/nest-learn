@@ -7,10 +7,24 @@ import {
 } from '@/modules/app/constants/app.constants';
 import { AllExceptionsFilter } from '@/modules/app/filters/all-exceptions.filter';
 import { RequestLoggingInterceptor } from '@/modules/app/interceptors/request-logging.interceptor';
+import { existsSync, mkdirSync } from 'fs';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import {
+  UPLOADS_FOLDER,
+  UPLOADS_PATH,
+} from '@/modules/file/constants/file.constants';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+  });
+
+  if (!existsSync(UPLOADS_PATH)) {
+    mkdirSync(UPLOADS_PATH, { recursive: true });
+  }
+
+  app.useStaticAssets(UPLOADS_PATH, {
+    prefix: `/${UPLOADS_FOLDER}`,
   });
 
   app.setGlobalPrefix(API_PREFIX);

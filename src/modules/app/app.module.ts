@@ -11,6 +11,7 @@ import jwtConfig from './config/jwt.config';
 import throttlerConfig from './config/throttler.config';
 import { configSchema } from './validation/config.schema';
 import { OrderModule } from '@/modules/order/order.module';
+import { FileModule } from '@/modules/file/file.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { OrderModule } from '@/modules/order/order.module';
         return databaseConfig;
       },
     }),
+    FileModule,
     AuthModule,
     UserModule,
     BookModule,
