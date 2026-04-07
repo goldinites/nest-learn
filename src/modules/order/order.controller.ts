@@ -65,7 +65,7 @@ export class OrderController {
     return mapOrderToResponse(order);
   }
 
-  @Patch(':orderId')
+  @Patch('cancel/:orderId')
   async cancelOrder(
     @CurrentUser() { userId }: AuthUser,
     @Param('orderId', ParseIntPipe) orderId: number,
