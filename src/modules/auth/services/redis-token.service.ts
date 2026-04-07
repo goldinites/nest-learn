@@ -1,4 +1,9 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 import { ConfigService } from '@nestjs/config';
 
@@ -13,7 +18,7 @@ export class RedisTokenService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('error', (error) => {
-      console.error('Redis error:', error);
+      Logger.error(`Redis error: ${error}`);
     });
 
     await this.client.connect();

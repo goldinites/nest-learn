@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -54,6 +55,23 @@ export class CartController {
       userId,
       payload,
     );
+
+    return mapCartItemToDto(item);
+  }
+
+  @Patch('items/:bookId')
+  async updateItemQuantity(
+    @CurrentUser() { userId }: AuthUser,
+    @Param('bookId', ParseIntPipe) bookId: number,
+    @Body('quantity', ParseIntPipe) quantity: number,
+  ): Promise<CartItemResponse | void> {
+    const item: CartItem | void = await this.cartService.updateQuantity(
+      userId,
+      bookId,
+      quantity,
+    );
+
+    if (!item) return;
 
     return mapCartItemToDto(item);
   }

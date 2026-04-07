@@ -37,7 +37,10 @@ export class CartService {
 
     if (!cart) throw new NotFoundException(CartErrors.NOT_FOUND);
 
-    return cart.items.reduce((acc, item) => acc + item.quantity, 0);
+    return cart.items.reduce(
+      (acc: number, item: CartItem): number => acc + item.quantity,
+      0,
+    );
   }
 
   async addItemToCart(
@@ -49,76 +52,132 @@ export class CartService {
     if (quantity <= 0)
       throw new BadRequestException(CartErrors.QUANTITY_NOT_ENOUGH);
 
-    return await this.dataSource.transaction(async (manager) => {
-      const bookRepository = manager.getRepository(Book);
+    return await this.dataSource.transaction(
+      async (manager): Promise<CartItem> => {
+        const bookRepository = manager.getRepository(Book);
+        const cartRepository = manager.getRepository(Cart);
+        const cartItemRepository = manager.getRepository(CartItem);
+
+        const book = await bookRepository.findOne({
+          where: { id: bookId },
+        });
+
+        if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+        let cart = await cartRepository.findOne({
+          where: { user: { id: userId } },
+        });
+
+        if (!cart) {
+          cart = cartRepository.create({
+            user: { id: userId },
+            items: [],
+          });
+
+          cart = await cartRepository.save(cart);
+        }
+
+        const existingItem = await cartItemRepository.findOne({
+          where: {
+            cart: { id: cart.id },
+            book: { id: bookId },
+          },
+        });
+
+        if (existingItem) {
+          const nextQuantity = existingItem.quantity + quantity;
+
+          if (nextQuantity > book.stockCount)
+            throw new BadRequestException(CartErrors.QUANTITY_NOT_AVAILABLE);
+
+          existingItem.quantity = nextQuantity;
+
+          return cartItemRepository.save(existingItem);
+        }
+
+        if (quantity > book.stockCount)
+          throw new BadRequestException(CartErrors.QUANTITY_NOT_AVAILABLE);
+
+        const item = cartItemRepository.create({
+          cart,
+          book,
+          quantity,
+        });
+
+        return cartItemRepository.save(item);
+      },
+    );
+  }
+
+  async updateQuantity(
+    userId: number,
+    bookId: number,
+    quantity: number,
+  ): Promise<CartItem | void> {
+    if (quantity <= 0) return await this.deleteItemFromCart(userId, bookId);
+
+    return this.dataSource.transaction(async (manager) => {
       const cartRepository = manager.getRepository(Cart);
       const cartItemRepository = manager.getRepository(CartItem);
 
-      const book = await bookRepository.findOne({
-        where: { id: bookId },
-      });
-
-      if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
-
-      let cart = await cartRepository.findOne({
+      const cart = await cartRepository.findOne({
         where: { user: { id: userId } },
       });
 
-      if (!cart) {
-        cart = cartRepository.create({
-          user: { id: userId },
-          items: [],
-        });
+      if (!cart) throw new NotFoundException(CartErrors.NOT_FOUND);
 
-        cart = await cartRepository.save(cart);
-      }
-
-      const existingItem = await cartItemRepository.findOne({
+      const item = await cartItemRepository.findOne({
         where: {
           cart: { id: cart.id },
           book: { id: bookId },
         },
       });
 
-      if (existingItem) {
-        const nextQuantity = existingItem.quantity + quantity;
+      if (!item) throw new NotFoundException(CartErrors.CART_ITEM_NOT_FOUND);
 
-        if (nextQuantity > book.stockCount)
-          throw new BadRequestException(CartErrors.QUANTITY_NOT_AVAILABLE);
-
-        existingItem.quantity = nextQuantity;
-
-        return cartItemRepository.save(existingItem);
-      }
-
-      if (quantity > book.stockCount)
-        throw new BadRequestException(CartErrors.QUANTITY_NOT_AVAILABLE);
-
-      const item = cartItemRepository.create({
-        cart,
-        book,
+      const { affected } = await cartItemRepository.update(item.id, {
         quantity,
       });
 
-      return cartItemRepository.save(item);
+      if (affected === 0)
+        throw new BadRequestException(CartErrors.CART_ITEM_NOT_UPDATED);
+
+      const updatedItem = await cartItemRepository.findOne({
+        where: {
+          cart: { id: cart.id },
+          book: { id: bookId },
+        },
+      });
+
+      if (!updatedItem)
+        throw new NotFoundException(CartErrors.CART_ITEM_NOT_FOUND);
+
+      return updatedItem;
     });
   }
 
   async deleteItemFromCart(userId: number, bookId: number): Promise<void> {
-    const cart: Cart | null = await this.getCart(userId);
+    return this.dataSource.transaction(async (manager) => {
+      const cartRepository = manager.getRepository(Cart);
+      const cartItemRepository = manager.getRepository(CartItem);
 
-    if (!cart) throw new NotFoundException(CartErrors.NOT_FOUND);
+      const cart = await cartRepository.findOne({
+        where: { user: { id: userId } },
+      });
 
-    const item: CartItem | null = await this.cartItemRepository.findOne({
-      where: {
-        cart: { id: cart.id },
-        book: { id: bookId },
-      },
+      if (!cart) throw new NotFoundException(CartErrors.NOT_FOUND);
+
+      const item: CartItem | null = await cartItemRepository.findOne({
+        where: {
+          cart: { id: cart.id },
+          book: { id: bookId },
+        },
+      });
+
+      if (!item) throw new NotFoundException(CartErrors.CART_ITEM_NOT_FOUND);
+
+      await cartItemRepository.remove(item);
     });
-
-    if (!item) throw new NotFoundException(CartErrors.CART_ITEM_NOT_FOUND);
-
-    await this.cartItemRepository.remove(item);
   }
 
   async deleteCart(userId: number): Promise<void> {
