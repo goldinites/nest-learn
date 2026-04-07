@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  Max,
+  Min,
+} from 'class-validator';
 import { Roles } from '@/modules/user/enums/roles.enum';
 import type { FindOptionsOrderValue } from 'typeorm';
 
@@ -14,6 +22,7 @@ export type UserSortField = (typeof USER_SORT_FIELDS)[number];
 
 export class GetUserReqDto {
   @IsOptional()
+  @IsNumber()
   @Type(() => Number)
   id?: number;
 

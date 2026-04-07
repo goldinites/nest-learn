@@ -11,16 +11,12 @@ import { getBookDefaultParams } from '@/modules/book/constants/get-book.constant
 import { BookErrors } from '@/modules/book/enums/errors.enum';
 import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
 import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
-import { normalizeQueryIn } from '@/modules/utils/query/normalize-query-in';
-import { normalizeBetween } from '@/modules/utils/query/normalize-query-between';
+import { normalizeQuery } from '@/modules/utils/query/normalize-query';
 
 @Injectable()
 export class BookService {
-  private multiValueFields: string[] = [
-    'publishedYear',
-    'genre',
-    'language',
-  ] as const;
+  private multiValueFields: string[] = ['genre', 'language'] as const;
+  private rangeValueFields: string[] = ['price', 'publishedYear'] as const;
 
   constructor(
     @InjectRepository(Book)
@@ -28,19 +24,15 @@ export class BookService {
   ) {}
 
   async find(query?: GetBookReqDto): Promise<Book[]> {
-    const { field, direction, limit, offset, priceFrom, priceTo, ...rest } = {
+    const { field, direction, limit, offset, ...rest } = {
       ...getBookDefaultParams,
       ...query,
     };
 
-    const where = normalizeQueryIn<GetBookReqDto, Book>(
-      rest,
-      this.multiValueFields,
-    );
-
-    const priceRange = normalizeBetween(priceFrom, priceTo);
-
-    if (priceRange) where.price = priceRange;
+    const where = normalizeQuery(rest, {
+      inFields: this.multiValueFields,
+      betweenFields: this.rangeValueFields,
+    });
 
     return await this.bookRepository.find({
       where,

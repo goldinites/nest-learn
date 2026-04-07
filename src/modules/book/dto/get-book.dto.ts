@@ -1,5 +1,14 @@
 import { Type, Transform } from 'class-transformer';
-import { IsArray, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsArray,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import type { FindOptionsOrderValue } from 'typeorm';
 import { toArray } from '@/modules/utils/to-array';
 
@@ -19,23 +28,29 @@ export type BookSortField = (typeof BOOK_SORT_FIELDS)[number];
 
 export class GetBookReqDto {
   @IsOptional()
+  @IsNumber()
   @Type(() => Number)
   id?: number;
 
   @IsOptional()
+  @IsString()
   @Type(() => String)
   title?: string;
 
   @IsOptional()
+  @IsString()
   @Type(() => String)
   author?: string;
 
   @IsOptional()
-  @Transform(({ value }) => toArray(value)?.map(Number))
-  @IsArray()
   @Type(() => Number)
-  @IsInt({ each: true })
-  publishedYear?: number[];
+  @IsNumber()
+  publishedYearFrom?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  publishedYearTo?: number;
 
   @IsOptional()
   @Transform(({ value }) => toArray(value)?.map(String))
@@ -51,19 +66,19 @@ export class GetBookReqDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
+  @IsNumber()
   @Min(0)
   @Max(5)
   rating?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
+  @IsNumber()
   priceFrom?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
+  @IsNumber()
   priceTo?: number;
 
   @IsOptional()
