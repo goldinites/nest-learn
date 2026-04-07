@@ -15,8 +15,8 @@ import { normalizeQuery } from '@/modules/utils/query/normalize-query';
 
 @Injectable()
 export class BookService {
-  private multiValueFields: string[] = ['genre', 'language'] as const;
-  private rangeValueFields: string[] = ['price', 'publishedYear'] as const;
+  private multiFieldsValue: string[] = ['genre', 'language'] as const;
+  private rangeFieldsValue: string[] = ['price', 'publishedYear'] as const;
 
   constructor(
     @InjectRepository(Book)
@@ -30,8 +30,8 @@ export class BookService {
     };
 
     const where = normalizeQuery(rest, {
-      inFields: this.multiValueFields,
-      betweenFields: this.rangeValueFields,
+      multiFields: this.multiFieldsValue,
+      rangeFields: this.rangeFieldsValue,
     });
 
     return await this.bookRepository.find({

@@ -3,8 +3,8 @@ import { normalizeQueryIn } from '@/modules/utils/query/normalize-query-in';
 import { normalizeQueryBetween } from '@/modules/utils/query/normalize-query-between';
 
 type NormalizeQueryOptions = {
-  inFields?: string[];
-  betweenFields?: string[];
+  multiFields?: string[];
+  rangeFields?: string[];
 };
 
 export function normalizeQuery<T, K>(
@@ -13,12 +13,12 @@ export function normalizeQuery<T, K>(
 ): FindOptionsWhere<K> {
   let where = { ...query } as Record<string, unknown>;
 
-  if (options.inFields?.length) {
-    where = normalizeQueryIn(where, options.inFields);
+  if (options.multiFields?.length) {
+    where = normalizeQueryIn(where, options.multiFields);
   }
 
-  if (options.betweenFields?.length) {
-    where = normalizeQueryBetween(where, options.betweenFields);
+  if (options.rangeFields?.length) {
+    where = normalizeQueryBetween(where, options.rangeFields);
   }
 
   return where as FindOptionsWhere<K>;
