@@ -14,13 +14,14 @@ export function mapCartItemToDto(item: CartItem): CartItemResponse {
 }
 
 export function mapCartToDto(cart: Cart): CartResponse {
-  const items = cart.items.map(mapCartItemToDto);
+  const items: CartItemResponse[] = cart.items.map(mapCartItemToDto);
 
   return {
     id: cart.id,
     items,
     totalPrice: items.reduce(
-      (sum, item) => sum + item.quantity * (item.price ?? 0),
+      (sum: number, item: CartItemResponse): number =>
+        sum + item.quantity * (item.price ?? 0),
       0,
     ),
   };
