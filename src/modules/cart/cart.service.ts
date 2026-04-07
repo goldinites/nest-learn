@@ -18,9 +18,6 @@ export class CartService {
     @InjectRepository(Cart)
     private cartRepository: Repository<Cart>,
 
-    @InjectRepository(CartItem)
-    private cartItemRepository: Repository<CartItem>,
-
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
