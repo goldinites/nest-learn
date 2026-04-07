@@ -22,8 +22,8 @@ async function bootstrap(): Promise<void> {
   const port = process.env.PORT ?? DEFAULT_APP_PORT;
 
   await app.listen(port, () => {
-    Logger.log(`Server is running on port ${port}`);
+    Logger.log(`Server is running on port ${port}`, 'Bootstrap');
   });
 }
 
-bootstrap().catch((error) => Logger.error(error));
+bootstrap().catch((error) => Logger.error(error, 'Bootstrap'));

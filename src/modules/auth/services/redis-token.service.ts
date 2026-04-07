@@ -18,7 +18,7 @@ export class RedisTokenService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('error', (error) => {
-      Logger.error(`Redis error: ${error}`);
+      Logger.error(`Redis error: ${error}`, 'RedisTokenService');
     });
 
     await this.client.connect();
