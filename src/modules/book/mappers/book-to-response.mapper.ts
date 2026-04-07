@@ -10,8 +10,8 @@ export function mapBookToResponse(book: Book): BookResponse {
     genre: book.genre,
     language: book.language,
     stockCount: book.stockCount,
-    rating: book.rating,
-    price: book.price,
+    rating: Number(book.rating),
+    price: Number(book.price),
   };
 }
 

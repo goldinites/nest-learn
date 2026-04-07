@@ -18,8 +18,8 @@ import { Cart } from '@/modules/cart/entities/cart.entity';
 import { CartErrors } from '@/modules/cart/enums/errors.enum';
 import { AddToCartDto } from '@/modules/cart/dto/add-to-cart.dto';
 import {
-  mapCartItemToDto,
-  mapCartToDto,
+  mapCartItemToResponse,
+  mapCartToResponse,
 } from '@/modules/cart/mappers/cart-to-response.mapper';
 import { CartResponse } from '@/modules/cart/types/cart.type';
 import { CartItemResponse } from '@/modules/cart/types/cart-item.type';
@@ -36,7 +36,7 @@ export class CartController {
 
     if (!cart) throw new NotFoundException(CartErrors.NOT_FOUND);
 
-    return mapCartToDto(cart);
+    return mapCartToResponse(cart);
   }
 
   @Get('count')
@@ -56,7 +56,7 @@ export class CartController {
       payload,
     );
 
-    return mapCartItemToDto(item);
+    return mapCartItemToResponse(item);
   }
 
   @Patch('items/:bookId')
@@ -73,7 +73,7 @@ export class CartController {
 
     if (!item) return;
 
-    return mapCartItemToDto(item);
+    return mapCartItemToResponse(item);
   }
 
   @Delete('items/:bookId')

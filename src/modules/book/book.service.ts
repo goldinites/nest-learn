@@ -11,7 +11,8 @@ import { getBookDefaultParams } from '@/modules/book/constants/get-book.constant
 import { BookErrors } from '@/modules/book/enums/errors.enum';
 import { CreateBookDto } from '@/modules/book/dto/create-book.dto';
 import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
-import { normalizeQueryWhere } from '@/modules/utils/normalize-query-where';
+import { normalizeQueryIn } from '@/modules/utils/query/normalize-query-in';
+import { normalizeBetween } from '@/modules/utils/query/normalize-query-between';
 
 @Injectable()
 export class BookService {
@@ -27,15 +28,19 @@ export class BookService {
   ) {}
 
   async find(query?: GetBookReqDto): Promise<Book[]> {
-    const { field, direction, limit, offset, ...rest } = {
+    const { field, direction, limit, offset, priceFrom, priceTo, ...rest } = {
       ...getBookDefaultParams,
       ...query,
     };
 
-    const where = normalizeQueryWhere<GetBookReqDto, Book>(
+    const where = normalizeQueryIn<GetBookReqDto, Book>(
       rest,
       this.multiValueFields,
     );
+
+    const priceRange = normalizeBetween(priceFrom, priceTo);
+
+    if (priceRange) where.price = priceRange;
 
     return await this.bookRepository.find({
       where,

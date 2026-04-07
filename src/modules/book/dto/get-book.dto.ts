@@ -59,7 +59,12 @@ export class GetBookReqDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  price?: number;
+  priceFrom?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  priceTo?: number;
 
   @IsOptional()
   @IsIn(BOOK_SORT_FIELDS)

@@ -1,6 +1,6 @@
 import { FindOptionsWhere, In } from 'typeorm';
 
-export function normalizeQueryWhere<T, K>(
+export function normalizeQueryIn<T, K>(
   query: T,
   multiValueFields: string[],
 ): FindOptionsWhere<K> {

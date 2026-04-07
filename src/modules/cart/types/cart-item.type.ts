@@ -2,6 +2,6 @@ export type CartItemResponse = {
   id: number;
   bookId: number;
   title: string;
-  price: number | null;
+  price: number;
   quantity: number;
 };

@@ -3,18 +3,18 @@ import { CartItem } from '@/modules/cart/entities/cart-item.entity';
 import { CartItemResponse } from '@/modules/cart/types/cart-item.type';
 import { CartResponse } from '@/modules/cart/types/cart.type';
 
-export function mapCartItemToDto(item: CartItem): CartItemResponse {
+export function mapCartItemToResponse(item: CartItem): CartItemResponse {
   return {
     id: item.id,
     bookId: item.book.id,
     title: item.book.title,
-    price: item.book.price,
+    price: Number(item.book.price),
     quantity: item.quantity,
   };
 }
 
-export function mapCartToDto(cart: Cart): CartResponse {
-  const items: CartItemResponse[] = cart.items.map(mapCartItemToDto);
+export function mapCartToResponse(cart: Cart): CartResponse {
+  const items: CartItemResponse[] = cart.items.map(mapCartItemToResponse);
 
   return {
     id: cart.id,

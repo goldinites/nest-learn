@@ -2,11 +2,11 @@ import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNumber,
-  IsOptional,
   IsPositive,
   IsString,
   Min,
   Max,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateBookDto {
@@ -33,14 +33,13 @@ export class CreateBookDto {
   @Min(0)
   stockCount: number;
 
-  @IsOptional()
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
-  rating?: number;
-
   @IsOptional()
+  rating: number;
+
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
-  price?: number;
+  price: number;
 }
