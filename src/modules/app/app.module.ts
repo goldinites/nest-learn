@@ -10,6 +10,7 @@ import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import throttlerConfig from './config/throttler.config';
 import { configSchema } from './validation/config.schema';
+import { OrderModule } from '@/modules/order/order.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { configSchema } from './validation/config.schema';
     UserModule,
     BookModule,
     CartModule,
+    OrderModule,
   ],
 })
 export class AppModule {}

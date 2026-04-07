@@ -5,4 +5,5 @@ export enum CartErrors {
   CART_ITEM_NOT_DELETED = 'Cart item not deleted',
   QUANTITY_NOT_ENOUGH = 'Quantity must be greater than 0',
   QUANTITY_NOT_AVAILABLE = 'Quantity not available',
+  CART_IS_EMPTY = 'Cart is empty',
 }
