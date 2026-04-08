@@ -47,12 +47,12 @@ import { FileModule } from '@/modules/file/file.module';
         return databaseConfig;
       },
     }),
-    FileModule,
     AuthModule,
     UserModule,
     BookModule,
     CartModule,
     OrderModule,
+    FileModule,
   ],
 })
 export class AppModule {}

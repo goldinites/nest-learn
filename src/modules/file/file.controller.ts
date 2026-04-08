@@ -11,9 +11,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
 import { DeleteFileParamsDto } from './dto/delete-file-params.dto';
-import { UploadFileResponseDto } from './dto/upload-file-response.dto';
+import type { UploadFileResponse } from './types/file.types';
 import { createUploadOptions } from './helpers/file.helper';
-import { FILE_FOLDERS } from '@/modules/file/types/file.types';
+import { FILE_FOLDERS } from '@/modules/file/constants/file.constants';
+import { mapFileToResponse } from '@/modules/file/mappers/file-to-response.mapper';
+import { FileErrors } from '@/modules/file/enums/errors.enum';
 
 @Controller('files')
 export class FileController {
@@ -26,17 +28,10 @@ export class FileController {
   uploadImage(
     @UploadedFile(new ParseFilePipeBuilder().build({ fileIsRequired: true }))
     file: Express.Multer.File,
-  ): UploadFileResponseDto {
-    if (!file) throw new BadRequestException('File is required');
+  ): UploadFileResponse {
+    if (!file) throw new BadRequestException(FileErrors.FILE_REQUIRED);
 
-    return {
-      filename: file.filename,
-      originalName: file.originalname,
-      url: this.fileService.buildPublicUrl(FILE_FOLDERS.images, file.filename),
-      mimetype: file.mimetype,
-      size: file.size,
-      folder: FILE_FOLDERS.images,
-    };
+    return mapFileToResponse(file);
   }
 
   @Post('file')
@@ -46,25 +41,17 @@ export class FileController {
   uploadFile(
     @UploadedFile(new ParseFilePipeBuilder().build({ fileIsRequired: true }))
     file: Express.Multer.File,
-  ): UploadFileResponseDto {
-    if (!file) throw new BadRequestException('File is required');
+  ): UploadFileResponse {
+    if (!file) throw new BadRequestException(FileErrors.FILE_REQUIRED);
 
-    return {
-      filename: file.filename,
-      originalName: file.originalname,
-      url: this.fileService.buildPublicUrl(FILE_FOLDERS.files, file.filename),
-      mimetype: file.mimetype,
-      size: file.size,
-      folder: FILE_FOLDERS.files,
-    };
+    return mapFileToResponse(file);
   }
 
   @Delete(':folder/:filename')
-  deleteFile(@Param() params: DeleteFileParamsDto): { success: true } {
+  deleteFile(@Param() params: DeleteFileParamsDto): void {
     this.fileService.removeFile(
       params.folder as keyof typeof FILE_FOLDERS,
       params.filename,
     );
-    return { success: true };
   }
 }

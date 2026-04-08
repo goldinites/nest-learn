@@ -3,6 +3,11 @@ import { join } from 'path';
 export const UPLOADS_FOLDER = 'uploads';
 export const UPLOADS_PATH = join(process.cwd(), UPLOADS_FOLDER);
 
+export const FILE_FOLDERS = {
+  images: 'images',
+  files: 'files',
+} as const;
+
 export const IMAGE_MIME_TYPES = /^image\/(jpeg|jpg|png|webp|gif|avif)$/;
 export const FILE_MIME_TYPES =
   /^application\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/;

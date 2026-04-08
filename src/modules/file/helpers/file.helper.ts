@@ -11,6 +11,7 @@ import {
   UPLOADS_PATH,
 } from '@/modules/file/constants/file.constants';
 import { FileFolder, UploadType } from '@/modules/file/types/file.types';
+import { FileErrors } from '@/modules/file/enums/errors.enum';
 
 const ensureDirectory = (directoryPath: string): void => {
   if (!existsSync(directoryPath)) {
@@ -41,12 +42,12 @@ export const createUploadOptions = (
     }),
     fileFilter: (_req, file, callback) => {
       if (type === 'image' && !IMAGE_MIME_TYPES.test(file.mimetype)) {
-        callback(new Error('Only image files are allowed'), false);
+        callback(new Error(FileErrors.NOT_AVAILABLE_TYPE), false);
         return;
       }
 
       if (type === 'file' && !FILE_MIME_TYPES.test(file.mimetype)) {
-        callback(new Error('Not allowed format of file'), false);
+        callback(new Error(FileErrors.NOT_AVAILABLE_TYPE), false);
         return;
       }
 
