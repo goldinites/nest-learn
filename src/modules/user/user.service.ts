@@ -11,7 +11,7 @@ import type { CreateUserDto } from '@/modules/user/dto/create-user.dto';
 import type { UpdateUserDto } from '@/modules/user/dto/update-user.dto';
 import { GetUserReqDto } from '@/modules/user/dto/get-user.dto';
 import { getUserDefaultParams } from '@/modules/user/constants/get-user.constants';
-import * as argon2 from 'argon2';
+import argon2 from 'argon2';
 import { Roles } from '@/modules/user/enums/roles.enum';
 
 @Injectable()
