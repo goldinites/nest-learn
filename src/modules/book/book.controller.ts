@@ -38,6 +38,7 @@ import { RequiredFilePipe } from '@/modules/file/pipes/required-file.pipe';
 import { prepareFileMetadata } from '@/modules/file/utils/prepare-metadata.util';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Permissions(Roles.ADMIN)
 @Controller('book')
 export class BookController {
   constructor(
@@ -66,7 +67,6 @@ export class BookController {
   }
 
   @Post()
-  @Permissions(Roles.ADMIN)
   async createBook(@Body() payload: CreateBookDto): Promise<BookResponse> {
     const book: Book = await this.bookService.createBook(payload);
 
@@ -74,7 +74,6 @@ export class BookController {
   }
 
   @Post('import')
-  @Permissions(Roles.ADMIN)
   async importBooks(
     @Body(new ParseArrayPipe({ items: CreateBookDto }))
     payload: CreateBookDto[],
@@ -87,7 +86,6 @@ export class BookController {
   }
 
   @Patch(':id')
-  @Permissions(Roles.ADMIN)
   async updateBook(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateBookDto,
@@ -100,7 +98,6 @@ export class BookController {
   }
 
   @Patch(':id/image')
-  @Permissions(Roles.ADMIN)
   @UseInterceptors(FilesUploadInterceptor(UploadType.IMAGE))
   async updateBookImage(
     @Param('id', ParseIntPipe) id: number,
@@ -130,7 +127,6 @@ export class BookController {
   }
 
   @Delete(':id')
-  @Permissions(Roles.ADMIN)
   async deleteBook(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.bookService.deleteBook(id);
   }
