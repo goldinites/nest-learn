@@ -22,6 +22,7 @@ import { GetFileDto } from '@/modules/file/dto/get-file.dto';
 import { UploadType } from '@/modules/file/enums/upload-type.enum';
 import { FilesUploadInterceptor } from '@/modules/file/interceptors/file-upload.interceptor';
 import { RequiredFilePipe } from '@/modules/file/pipes/required-file.pipe';
+import { prepareFileMetadata } from '@/modules/file/utils/prepare-metadata.util';
 
 @Controller('files')
 export class FileController {
@@ -36,11 +37,11 @@ export class FileController {
     if (!files?.length) throw new BadRequestException(FileErrors.FILE_REQUIRED);
 
     files.forEach((file) => {
-      this.fileService.saveMetadata(FileFolders.IMAGES, file.filename, {
-        originalName: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-      });
+      this.fileService.saveMetadata(
+        FileFolders.IMAGES,
+        file.filename,
+        prepareFileMetadata(file),
+      );
     });
 
     return mapFilesToResponse(files, FileFolders.IMAGES);
@@ -55,11 +56,11 @@ export class FileController {
     if (!files?.length) throw new BadRequestException(FileErrors.FILE_REQUIRED);
 
     files.forEach((file) => {
-      this.fileService.saveMetadata(FileFolders.FILES, file.filename, {
-        originalName: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-      });
+      this.fileService.saveMetadata(
+        FileFolders.FILES,
+        file.filename,
+        prepareFileMetadata(file),
+      );
     });
 
     return mapFilesToResponse(files, FileFolders.FILES);

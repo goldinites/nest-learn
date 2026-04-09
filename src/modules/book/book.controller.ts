@@ -35,6 +35,7 @@ import { FileFolders } from '@/modules/file/enums/folders.enum';
 import { UploadType } from '@/modules/file/enums/upload-type.enum';
 import { FilesUploadInterceptor } from '@/modules/file/interceptors/file-upload.interceptor';
 import { RequiredFilePipe } from '@/modules/file/pipes/required-file.pipe';
+import { prepareFileMetadata } from '@/modules/file/utils/prepare-metadata.util';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('book')
@@ -108,11 +109,11 @@ export class BookController {
   ): Promise<BookResponse> {
     if (!image) throw new BadRequestException(BookErrors.IMAGE_REQUIRED);
 
-    this.fileService.saveMetadata(FileFolders.IMAGES, image.filename, {
-      originalName: image.originalname,
-      mimetype: image.mimetype,
-      size: image.size,
-    });
+    this.fileService.saveMetadata(
+      FileFolders.IMAGES,
+      image.filename,
+      prepareFileMetadata(image),
+    );
 
     const imageUrl = this.fileService.buildPublicUrl(
       FileFolders.IMAGES,
