@@ -22,6 +22,7 @@ import { UploadType } from '@/modules/file/enums/upload-type.enum';
 import type { MulterModuleOptions } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { randomUUID } from 'crypto';
+
 @Injectable()
 export class FileService {
   ensureDirectory(directoryPath: string): void {

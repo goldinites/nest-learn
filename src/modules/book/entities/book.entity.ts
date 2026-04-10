@@ -23,10 +23,10 @@ export class Book {
   @Column()
   publishedYear: number;
 
-  @Column({ length: 100 })
+  @Column({ length: 255 })
   genre: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 255 })
   language: string;
 
   @Column({ default: 0 })

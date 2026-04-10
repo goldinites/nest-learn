@@ -6,22 +6,24 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Roles } from '@/modules/user/enums/roles.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 75 })
+  @Column({ length: 255 })
   firstName: string;
 
-  @Column({ length: 75 })
+  @Column({ length: 255 })
   lastName: string;
 
-  @Column({ length: 128, unique: true })
+  @Column({ length: 255, unique: true })
   email: string;
 
-  @Column({ length: 256 })
+  @Column({ length: 255 })
+  @Exclude()
   password: string;
 
   @Column({ type: 'enum', enum: Roles, default: Roles.USER })
