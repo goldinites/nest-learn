@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,7 +11,9 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from '@/modules/category/category.service';
 import { CreateCategoryDto } from '@/modules/category/dto/create-category.dto';
@@ -26,12 +29,22 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
 import { Permissions } from '@/modules/auth/decorators/permissions.decorator';
 import { Roles } from '@/modules/user/enums/roles.enum';
+import { FilesUploadInterceptor } from '@/modules/file/interceptors/file-upload.interceptor';
+import { UploadType } from '@/modules/file/enums/upload-type.enum';
+import { RequiredFilePipe } from '@/modules/file/pipes/required-file.pipe';
+import { BookErrors } from '@/modules/book/enums/errors.enum';
+import { prepareFileMetadata } from '@/modules/file/utils/prepare-metadata.util';
+import { FileService } from '@/modules/file/file.service';
+import { Category } from '@/modules/category/entities/category.entity';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Permissions(Roles.ADMIN)
 @Controller('category')
 class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(
+    private readonly categoryService: CategoryService,
+    private readonly fileService: FileService,
+  ) {}
 
   @Get()
   async getCategories(
@@ -39,7 +52,7 @@ class CategoryController {
   ): Promise<CategoryResponse[]> {
     const categories = await this.categoryService.getCategories(query);
 
-    return mapCategoriesToResponse(categories);
+    return mapCategoriesToResponse(categories, query.withBooks);
   }
 
   @Get(':id')
@@ -68,6 +81,34 @@ class CategoryController {
     @Body() payload: UpdateCategoryDto,
   ): Promise<CategoryResponse> {
     const category = await this.categoryService.updateCategory(id, payload);
+
+    return mapCategoryToResponse(category);
+  }
+
+  @Patch(':id/image')
+  @UseInterceptors(
+    FilesUploadInterceptor(UploadType.IMAGE, {
+      fieldName: 'image',
+      mode: 'single',
+    }),
+  )
+  async updateBookImage(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile(RequiredFilePipe())
+    image: Express.Multer.File,
+  ): Promise<CategoryResponse> {
+    if (!image) throw new BadRequestException(BookErrors.IMAGE_REQUIRED);
+
+    this.fileService.saveMetadata(image.filename, prepareFileMetadata(image));
+
+    const imageUrl = this.fileService.buildPublicUrl(image.filename);
+
+    const category: Category | null = await this.categoryService.updateCategory(
+      id,
+      { imageUrl },
+    );
+
+    if (!category) throw new BadRequestException(BookErrors.NOT_UPDATED);
 
     return mapCategoryToResponse(category);
   }

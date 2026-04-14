@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { FindOptionsSelect, Repository } from 'typeorm';
+import { FindOptionsSelect, In, Repository } from 'typeorm';
 import { Category } from '@/modules/category/entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoryDto } from '@/modules/category/dto/create-category.dto';
@@ -11,9 +11,11 @@ import { UpdateCategoryDto } from '@/modules/category/dto/update-category.dto';
 import { CategoryErrors } from '@/modules/category/enums/errors.enum';
 import { GetCategoryReqDto } from '@/modules/category/dto/get-category.dto';
 import { getCategoryDefaultParams } from '@/modules/category/constants/get-category.constants';
+import { normalizeQuery } from '@/modules/utils/query/normalize-query';
 
 @Injectable()
 export class CategoryService {
+  private multiFieldsValue: string[] = ['title'] as const;
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
@@ -23,10 +25,14 @@ export class CategoryService {
     query?: GetCategoryReqDto,
     select?: FindOptionsSelect<Category>,
   ): Promise<Category[]> {
-    const { field, direction, limit, offset, withBooks, ...where } = {
+    const { field, direction, limit, offset, withBooks, ...rest } = {
       ...getCategoryDefaultParams,
       ...query,
     };
+
+    const where = normalizeQuery(rest, {
+      multiFields: this.multiFieldsValue,
+    });
 
     return await this.categoryRepository.find({
       where,
@@ -36,6 +42,10 @@ export class CategoryService {
       select,
       relations: { books: withBooks },
     });
+  }
+
+  async getCategoriesByIds(ids: number[]): Promise<Category[]> {
+    return await this.categoryRepository.find({ where: { id: In(ids) } });
   }
 
   async getCategoryById(id: number): Promise<Category | null> {

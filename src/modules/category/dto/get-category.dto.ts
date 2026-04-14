@@ -1,15 +1,16 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsIn,
   IsInt,
   IsNumber,
   IsOptional,
-  IsString,
   Max,
   Min,
 } from 'class-validator';
 import type { FindOptionsOrderValue } from 'typeorm';
+import { toArray } from '@/modules/utils/to-array';
 
 export const CATEGORY_SORT_FIELDS = ['id', 'title'] as const;
 
@@ -22,9 +23,15 @@ export class GetCategoryReqDto {
   id?: number;
 
   @IsOptional()
-  @IsString()
+  @Transform(({ value }) => toArray(value)?.map(String))
   @Type(() => String)
+  @IsArray()
   title?: string;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  withBooks?: boolean;
 
   @IsOptional()
   @IsIn(CATEGORY_SORT_FIELDS)
@@ -46,9 +53,4 @@ export class GetCategoryReqDto {
   @IsInt()
   @Min(0)
   offset?: number;
-
-  @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
-  withBooks?: boolean;
 }

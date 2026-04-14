@@ -9,7 +9,6 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   ILike,
-  In,
   Repository,
 } from 'typeorm';
 import { GetBookReqDto } from '@/modules/book/dto/get-book.dto';
@@ -20,6 +19,7 @@ import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
 import { normalizeQuery } from '@/modules/utils/query/normalize-query';
 import { Category } from '@/modules/category/entities/category.entity';
 import { CategoryErrors } from '@/modules/category/enums/errors.enum';
+import { CategoryService } from '@/modules/category/category.service';
 
 @Injectable()
 export class BookService {
@@ -29,8 +29,7 @@ export class BookService {
   constructor(
     @InjectRepository(Book)
     private bookRepository: Repository<Book>,
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
+    private categoryService: CategoryService,
   ) {}
 
   async getBooks(
@@ -42,7 +41,7 @@ export class BookService {
       ...query,
     };
 
-    const where = this.prepareBookFindWhere(rest);
+    const where = this.prepareBooksFindWhere(rest);
 
     return await this.bookRepository.find({
       where,
@@ -54,7 +53,9 @@ export class BookService {
     });
   }
 
-  private prepareBookFindWhere(query: GetBookReqDto): FindOptionsWhere<Book>[] {
+  private prepareBooksFindWhere(
+    query: GetBookReqDto,
+  ): FindOptionsWhere<Book>[] {
     const { genre, ...rest } = query;
 
     const normalized = normalizeQuery<GetBookReqDto, Book>(rest, {
@@ -79,9 +80,7 @@ export class BookService {
   async createBook(payload: CreateBookDto): Promise<Book> {
     const { categoryId, ...rest } = payload;
 
-    const category = await this.categoryRepository.findOneBy({
-      id: categoryId,
-    });
+    const category = await this.categoryService.getCategoryById(categoryId);
 
     if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
 
@@ -97,9 +96,9 @@ export class BookService {
     if (payload.length === 0) return [];
 
     const categoryIds = [...new Set(payload.map((item) => item.categoryId))];
-    const categories = await this.categoryRepository.findBy({
-      id: In(categoryIds),
-    });
+
+    const categories =
+      await this.categoryService.getCategoriesByIds(categoryIds);
 
     const categoryMap = new Map(
       categories.map((category) => [category.id, category]),
@@ -129,18 +128,17 @@ export class BookService {
     let category: Category | null = book.category;
 
     if (categoryId !== undefined) {
-      category = await this.categoryRepository.findOneBy({ id: categoryId });
+      category = await this.categoryService.getCategoryById(categoryId);
 
       if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
     }
 
-    const result = await this.bookRepository.update(id, {
+    const { affected } = await this.bookRepository.update(id, {
       ...rest,
       category,
     });
 
-    if (result.affected === 0)
-      throw new BadRequestException(BookErrors.NOT_UPDATED);
+    if (affected === 0) throw new BadRequestException(BookErrors.NOT_UPDATED);
 
     const updated: Book | null = await this.getBookById(id);
 
