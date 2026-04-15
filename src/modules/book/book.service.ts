@@ -41,7 +41,7 @@ export class BookService {
 
     const where = this.prepareBooksFindWhere(rest);
 
-    const [content, total] = await this.bookRepository.findAndCount({
+    return await this.bookRepository.findAndCount({
       where,
       order: { [field]: direction },
       take: limit,
@@ -49,8 +49,6 @@ export class BookService {
       select,
       relations: { category: true },
     });
-
-    return { content, total };
   }
 
   private prepareBooksFindWhere(

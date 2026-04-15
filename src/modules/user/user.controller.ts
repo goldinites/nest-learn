@@ -36,7 +36,7 @@ export class UserController {
 
   @Get()
   async getUsers(@Query() query: GetUserReqDto): Promise<GetUsersResponse> {
-    const { content, total } = await this.userService.getUsers(query);
+    const [content, total] = await this.userService.getUsers(query);
 
     return { content: mapUsersToResponse(content), total };
   }

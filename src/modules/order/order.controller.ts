@@ -35,7 +35,7 @@ export class OrderController {
     @CurrentUser() { userId }: AuthUser,
     @Query() query: GetOrderReqDto,
   ): Promise<GetOrdersResponse> {
-    const { content, total } = await this.orderService.getOrders(userId, query);
+    const [content, total] = await this.orderService.getOrders(userId, query);
 
     return { content: mapOrdersToResponse(content), total };
   }

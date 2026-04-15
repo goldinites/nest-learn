@@ -27,14 +27,12 @@ export class UserService {
       ...query,
     };
 
-    const [content, total] = await this.userRepository.findAndCount({
+    return await this.userRepository.findAndCount({
       where,
       order: { [field]: direction },
       take: limit,
       skip: offset,
     });
-
-    return { content, total };
   }
 
   async getUserById(id: number): Promise<User | null> {

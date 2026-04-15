@@ -35,7 +35,7 @@ export class CategoryService {
       multiFields: this.multiFieldsValue,
     });
 
-    const [content, total] = await this.categoryRepository.findAndCount({
+    return await this.categoryRepository.findAndCount({
       where,
       order: { [field]: direction },
       take: limit,
@@ -43,8 +43,6 @@ export class CategoryService {
       select,
       relations: { books: withBooks },
     });
-
-    return { content, total };
   }
 
   async getCategoryById(id: number): Promise<Category | null> {

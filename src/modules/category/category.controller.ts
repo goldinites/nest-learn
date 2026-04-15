@@ -53,7 +53,7 @@ class CategoryController {
   async getCategories(
     @Query() query: GetCategoryReqDto,
   ): Promise<GetCategoriesResponse> {
-    const { content, total } = await this.categoryService.getCategories(query);
+    const [content, total] = await this.categoryService.getCategories(query);
 
     return {
       content: mapCategoriesToResponse(content, query.withBooks),

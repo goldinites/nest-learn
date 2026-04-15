@@ -34,15 +34,13 @@ export class OrderService {
       ...query,
     };
 
-    const [content, total] = await this.orderRepository.findAndCount({
+    return await this.orderRepository.findAndCount({
       where: { user: { id: userId }, ...rest },
       order: { [field]: direction },
       take: limit,
       skip: offset,
       relations: { items: true },
     });
-
-    return { content, total };
   }
 
   async getOrderById(userId: number, id: number): Promise<Order | null> {
