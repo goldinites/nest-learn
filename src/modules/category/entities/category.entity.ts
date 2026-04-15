@@ -18,6 +18,6 @@ export class Category {
   @OneToMany(() => Book, (book) => book.category)
   books: Book[];
 
-  @Column({ length: 255, default: 0 })
+  @Column({ default: 0 })
   booksCount: number;
 }

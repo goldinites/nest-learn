@@ -15,6 +15,7 @@ export function mapCategoryToResponse(
     title: category.title,
     description: category.description,
     imageUrl: category.imageUrl,
+    booksCount: category.booksCount,
     books,
   };
 }

@@ -31,7 +31,7 @@ export class MainPageService {
       withBooks: true,
     });
 
-    return mapCategoriesToResponse(categories, true);
+    return mapCategoriesToResponse(categories);
   }
 
   async buildMainPageData(): Promise<MainPageData> {

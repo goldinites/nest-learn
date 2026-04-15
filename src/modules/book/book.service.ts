@@ -20,7 +20,7 @@ import { UpdateBookDto } from '@/modules/book/dto/update-book.dto';
 import { normalizeQuery } from '@/modules/utils/query/normalize-query';
 import { Category } from '@/modules/category/entities/category.entity';
 import { CategoryErrors } from '@/modules/category/enums/errors.enum';
-import { CategoryService } from '@/modules/category/category.service';
+import { BOOKS_COUNT_PROPERTY } from '@/modules/category/constants/category.constants';
 
 @Injectable()
 export class BookService {
@@ -30,9 +30,6 @@ export class BookService {
   constructor(
     @InjectRepository(Book)
     private bookRepository: Repository<Book>,
-
-    private categoryService: CategoryService,
-
     private readonly dataSource: DataSource,
   ) {}
 
@@ -96,7 +93,12 @@ export class BookService {
         category,
       });
 
-      await manager.increment(Category, { id: categoryId }, 'booksCount', 1);
+      await manager.increment(
+        Category,
+        { id: categoryId },
+        BOOKS_COUNT_PROPERTY,
+        1,
+      );
 
       return await bookRepository.save(book);
     });
@@ -105,63 +107,133 @@ export class BookService {
   async importBooks(payload: CreateBookDto[]): Promise<Book[]> {
     if (payload.length === 0) return [];
 
-    const categoryIds = [...new Set(payload.map((item) => item.categoryId))];
+    return await this.dataSource.transaction(async (manager) => {
+      const bookRepository = manager.getRepository(Book);
+      const categoryRepository = manager.getRepository(Category);
 
-    const categories =
-      await this.categoryService.getCategoriesByIds(categoryIds);
+      const categoryIds = [...new Set(payload.map((item) => item.categoryId))];
 
-    const categoryMap = new Map(
-      categories.map((category) => [category.id, category]),
-    );
-
-    const books = payload.map(({ categoryId, ...rest }) => {
-      const category = categoryMap.get(categoryId);
-
-      if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
-
-      return this.bookRepository.create({
-        ...rest,
-        category,
+      const categories = await categoryRepository.find({
+        where: categoryIds.map((id) => ({ id })),
       });
-    });
 
-    return await this.bookRepository.save(books);
+      const categoryMap = new Map(
+        categories.map((category) => [category.id, category]),
+      );
+
+      const books = payload.map(({ categoryId, ...rest }) => {
+        const category = categoryMap.get(categoryId);
+
+        if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
+
+        return bookRepository.create({
+          ...rest,
+          category,
+        });
+      });
+
+      const booksCountByCategory = payload.reduce((acc, { categoryId }) => {
+        acc.set(categoryId, (acc.get(categoryId) ?? 0) + 1);
+        return acc;
+      }, new Map<number, number>());
+
+      await Promise.all(
+        [...booksCountByCategory.entries()].map(([categoryId, count]) =>
+          manager.increment(
+            Category,
+            { id: categoryId },
+            BOOKS_COUNT_PROPERTY,
+            count,
+          ),
+        ),
+      );
+
+      return await bookRepository.save(books);
+    });
   }
 
   async updateBook(id: number, payload: UpdateBookDto): Promise<Book | null> {
-    const book: Book | null = await this.getBookById(id);
+    return await this.dataSource.transaction(async (manager) => {
+      const bookRepository = manager.getRepository(Book);
+      const categoryRepository = manager.getRepository(Category);
 
-    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
+      const book: Book | null = await bookRepository.findOne({
+        where: { id },
+        relations: { category: true },
+      });
 
-    const { categoryId, ...rest } = payload;
+      if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
 
-    let category: Category | null = book.category;
+      const { categoryId, ...rest } = payload;
 
-    if (categoryId !== undefined) {
-      category = await this.categoryService.getCategoryById(categoryId);
+      let category: Category | null = book.category;
+      const previousCategoryId = book.category?.id;
 
-      if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
-    }
+      if (categoryId !== undefined) {
+        category = await categoryRepository.findOneBy({ id: categoryId });
 
-    const { affected } = await this.bookRepository.update(id, {
-      ...rest,
-      category,
+        if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
+      }
+
+      const { affected } = await bookRepository.update(id, {
+        ...rest,
+        category,
+      });
+
+      if (affected === 0) throw new BadRequestException(BookErrors.NOT_UPDATED);
+
+      if (categoryId !== undefined && previousCategoryId !== category?.id) {
+        if (previousCategoryId !== undefined) {
+          await manager.decrement(
+            Category,
+            { id: previousCategoryId },
+            BOOKS_COUNT_PROPERTY,
+            1,
+          );
+        }
+
+        if (category?.id !== undefined) {
+          await manager.increment(
+            Category,
+            { id: category.id },
+            BOOKS_COUNT_PROPERTY,
+            1,
+          );
+        }
+      }
+
+      const updated: Book | null = await bookRepository.findOne({
+        where: { id },
+        relations: { category: true },
+      });
+
+      if (!updated) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+      return updated;
     });
-
-    if (affected === 0) throw new BadRequestException(BookErrors.NOT_UPDATED);
-
-    const updated: Book | null = await this.getBookById(id);
-
-    if (!updated) throw new NotFoundException(BookErrors.NOT_FOUND);
-
-    return updated;
   }
 
   async deleteBook(id: number): Promise<void> {
-    const book: Book | null = await this.getBookById(id);
+    await this.dataSource.transaction(async (manager) => {
+      const bookRepository = manager.getRepository(Book);
 
-    if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
+      const book: Book | null = await bookRepository.findOne({
+        where: { id },
+        relations: { category: true },
+      });
 
-    await this.bookRepository.remove(book);
+      if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+      if (book.category?.id !== undefined) {
+        await manager.decrement(
+          Category,
+          { id: book.category.id },
+          'booksCount',
+          1,
+        );
+      }
+
+      await bookRepository.remove(book);
+    });
   }
 }
