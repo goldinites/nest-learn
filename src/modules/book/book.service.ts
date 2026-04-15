@@ -33,24 +33,6 @@ export class BookService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async getBooks(query?: GetBookReqDto, select?: FindOptionsSelect<Book>) {
-    const { field, direction, limit, offset, ...rest } = {
-      ...getBookDefaultParams,
-      ...query,
-    };
-
-    const where = this.prepareBooksFindWhere(rest);
-
-    return await this.bookRepository.findAndCount({
-      where,
-      order: { [field]: direction },
-      take: limit,
-      skip: offset,
-      select,
-      relations: { category: true },
-    });
-  }
-
   private prepareBooksFindWhere(
     query: GetBookReqDto,
   ): FindOptionsWhere<Book>[] {
@@ -69,6 +51,24 @@ export class BookService {
           },
         }))
       : [normalized];
+  }
+
+  async getBooks(query?: GetBookReqDto, select?: FindOptionsSelect<Book>) {
+    const { field, direction, limit, offset, ...rest } = {
+      ...getBookDefaultParams,
+      ...query,
+    };
+
+    const where = this.prepareBooksFindWhere(rest);
+
+    return await this.bookRepository.findAndCount({
+      where,
+      order: { [field]: direction },
+      take: limit,
+      skip: offset,
+      select,
+      relations: { category: true },
+    });
   }
 
   async getBookById(id: number): Promise<Book | null> {
