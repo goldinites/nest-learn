@@ -15,11 +15,6 @@ import { toArray } from '@/modules/utils/to-array';
 export const BOOK_SORT_FIELDS = [
   'id',
   'title',
-  'author',
-  'publishedYear',
-  'genre',
-  'language',
-  'stockCount',
   'rating',
   'price',
   'createdAt',

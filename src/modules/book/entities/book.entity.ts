@@ -28,6 +28,9 @@ export class Book {
   @Column()
   publishedYear: number;
 
+  @Column({ length: 255 })
+  genre: string;
+
   @ManyToOne(() => Category)
   category: Category;
 

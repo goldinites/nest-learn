@@ -7,12 +7,13 @@ export function mapBookToResponse(book: Book): BookResponse {
     title: book.title,
     author: book.author,
     language: book.language,
-    genre: book.category?.title,
+    genre: book.genre,
     imageUrl: book.imageUrl,
     publishedYear: book.publishedYear,
     stockCount: book.stockCount,
     rating: Number(book.rating),
     price: Number(book.price),
+    description: book.description,
   };
 }
 

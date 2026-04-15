@@ -49,7 +49,7 @@ export class BookController {
   async getBooks(@Query() query: GetBookReqDto): Promise<GetBooksResponse> {
     const [content, total] = await this.bookService.getBooks(query);
 
-    return { content: mapBooksToResponse(content), total };
+    return { content: content, total };
   }
 
   @Get(':id')

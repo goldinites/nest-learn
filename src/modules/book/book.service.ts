@@ -18,7 +18,7 @@ import { BOOKS_COUNT_PROPERTY } from '@/modules/category/constants/category.cons
 
 @Injectable()
 export class BookService {
-  private multiFieldsValue: string[] = ['language'] as const;
+  private multiFieldsValue: string[] = ['genre', 'language'] as const;
   private rangeFieldsValue: string[] = ['price', 'publishedYear'] as const;
 
   constructor(
@@ -27,60 +27,32 @@ export class BookService {
     private readonly dataSource: DataSource,
   ) {}
 
-  private prepareBooksGenresFilter(
-    query: FindOptionsWhere<Book>,
-    genre?: string[],
-  ): FindOptionsWhere<Book>[] {
-    return genre?.length
-      ? genre.map((title) => ({
-          ...query,
-          category: {
-            title: ILike(`%${title}%`),
-          },
-        }))
-      : [query];
-  }
-
-  private searchBooks(
-    baseWhere: FindOptionsWhere<Book>[],
-    searchQuery?: string,
-  ) {
+  private searchBooks(whereProp: FindOptionsWhere<Book>, searchQuery?: string) {
     const queryValue = searchQuery?.trim();
 
     if (!queryValue) {
-      return baseWhere;
+      return whereProp;
     }
 
     const searchWhere: FindOptionsWhere<Book>[] = [];
 
-    for (const item of baseWhere) {
-      searchWhere.push(
-        { ...item, title: ILike(`%${queryValue}%`) },
-        { ...item, author: ILike(`%${queryValue}%`) },
-        { ...item, description: ILike(`%${queryValue}%`) },
-        { ...item, language: ILike(`%${queryValue}%`) },
-      );
-    }
+    searchWhere.push(
+      { ...whereProp, title: ILike(`%${queryValue}%`) },
+      { ...whereProp, author: ILike(`%${queryValue}%`) },
+    );
 
     return searchWhere;
   }
 
-  private prepareBooksFindWhere(
-    query: GetBookReqDto,
-  ): FindOptionsWhere<Book>[] {
-    const { genre, q, ...rest } = query;
+  private prepareBooksFindWhere(query: GetBookReqDto) {
+    const { q, ...rest } = query;
 
-    const normalizedQuery = normalizeQuery<GetBookReqDto, Book>(rest, {
+    const normalizedWhere = normalizeQuery<GetBookReqDto, Book>(rest, {
       multiFields: this.multiFieldsValue,
       rangeFields: this.rangeFieldsValue,
     });
 
-    const withGenreFilter = this.prepareBooksGenresFilter(
-      normalizedQuery,
-      genre,
-    );
-
-    return this.searchBooks(withGenreFilter, q);
+    return this.searchBooks(normalizedWhere, q);
   }
 
   async getBooks(query?: GetBookReqDto) {
@@ -96,7 +68,19 @@ export class BookService {
       order: { [field]: direction },
       take: limit,
       skip: offset,
-      relations: { category: true },
+      select: [
+        'id',
+        'title',
+        'description',
+        'imageUrl',
+        'author',
+        'publishedYear',
+        'genre',
+        'language',
+        'stockCount',
+        'rating',
+        'price',
+      ],
     });
   }
 
