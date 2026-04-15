@@ -13,7 +13,7 @@ export class MainPageService {
     private readonly bookService: BookService,
     private readonly categoryService: CategoryService,
   ) {}
-  async getNewestBooks(): Promise<BookResponse[]> {
+  private async getNewestBooks(): Promise<BookResponse[]> {
     const { content } = await this.bookService.getBooks({
       field: 'createdAt',
       direction: 'DESC',
@@ -23,7 +23,7 @@ export class MainPageService {
     return mapBooksToResponse(content);
   }
 
-  async getPopularBooksCategories(): Promise<CategoryResponse[]> {
+  private async getPopularBooksCategories(): Promise<CategoryResponse[]> {
     const { content } = await this.categoryService.getCategories({
       field: 'booksCount',
       direction: 'DESC',
@@ -33,7 +33,7 @@ export class MainPageService {
     return mapCategoriesToResponse(content);
   }
 
-  async getPopularBooks(): Promise<BookResponse[]> {
+  private async getPopularBooks(): Promise<BookResponse[]> {
     const { content } = await this.bookService.getBooks({
       field: 'purchasesCount',
       direction: 'DESC',

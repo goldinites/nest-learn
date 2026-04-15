@@ -20,22 +20,60 @@ import {
 import { FileMetadata, FileReadAs } from '@/modules/file/types/file.types';
 import { UploadType } from '@/modules/file/enums/upload-type.enum';
 import type { MulterModuleOptions } from '@nestjs/platform-express';
+import { FileErrors } from '@/modules/file/enums/errors.enum';
 import { diskStorage } from 'multer';
 import { randomUUID } from 'crypto';
 
 @Injectable()
 export class FileService {
-  ensureDirectory(directoryPath: string): void {
+  private ensureDirectory(directoryPath: string): void {
     if (!existsSync(directoryPath)) {
       mkdirSync(directoryPath, { recursive: true });
     }
   }
 
-  buildUploadPath(): string {
+  private buildUploadPath(): string {
     const destination = join(UPLOADS_PATH);
     this.ensureDirectory(destination);
 
     return destination;
+  }
+
+  private getFilePath(fileId: string): string {
+    return join(UPLOADS_PATH, fileId);
+  }
+
+  private getMetadataPath(fileId: string): string {
+    return `${this.getFilePath(fileId)}.meta.json`;
+  }
+
+  private resolveFilePath(fileId: string): string | null {
+    const path = this.getFilePath(fileId);
+
+    return existsSync(path) ? path : null;
+  }
+
+  private getFileReadStrategy(mime: string): FileReadAs {
+    if (TEXT_MIME_TYPES.test(mime)) return 'text';
+    if (BINARY_MIME_TYPES.test(mime)) return 'base64';
+
+    return 'unknown';
+  }
+
+  private readFileAsBase64(fileId: string): string | null {
+    const resolved = this.resolveFilePath(fileId);
+
+    if (!resolved) return null;
+
+    return readFileSync(resolved, 'base64');
+  }
+
+  private readFileAsText(fileId: string): string | null {
+    const resolved = this.resolveFilePath(fileId);
+
+    if (!resolved) return null;
+
+    return readFileSync(resolved, 'utf8');
   }
 
   createUploadOptions(type: UploadType): MulterModuleOptions | undefined {
@@ -78,24 +116,6 @@ export class FileService {
     return `/${UPLOADS_FOLDER}/${filename}`;
   }
 
-  getFilePath(fileId: string): string {
-    return join(UPLOADS_PATH, fileId);
-  }
-
-  getMetadataPath(fileId: string): string {
-    return `${this.getFilePath(fileId)}.meta.json`;
-  }
-
-  saveMetadata(fileId: string, metadata: FileMetadata): void {
-    writeFileSync(this.getMetadataPath(fileId), JSON.stringify(metadata));
-  }
-
-  resolveFilePath(fileId: string): string | null {
-    const path = this.getFilePath(fileId);
-
-    return existsSync(path) ? path : null;
-  }
-
   readMetadata(fileId: string): FileMetadata | null {
     const resolved = this.resolveFilePath(fileId);
 
@@ -108,27 +128,8 @@ export class FileService {
     return JSON.parse(readFileSync(metadataPath, 'utf8')) as FileMetadata;
   }
 
-  getFileReadStrategy(mime: string): FileReadAs {
-    if (TEXT_MIME_TYPES.test(mime)) return 'text';
-    if (BINARY_MIME_TYPES.test(mime)) return 'base64';
-
-    return 'unknown';
-  }
-
-  readFileAsBase64(fileId: string): string | null {
-    const resolved = this.resolveFilePath(fileId);
-
-    if (!resolved) return null;
-
-    return readFileSync(resolved, 'base64');
-  }
-
-  readFileAsText(fileId: string): string | null {
-    const resolved = this.resolveFilePath(fileId);
-
-    if (!resolved) return null;
-
-    return readFileSync(resolved, 'utf8');
+  saveMetadata(fileId: string, metadata: FileMetadata): void {
+    writeFileSync(this.getMetadataPath(fileId), JSON.stringify(metadata));
   }
 
   readFile(fileId: string): string | null {
@@ -169,5 +170,3 @@ export class FileService {
     }
   }
 }
-
-import { FileErrors } from '@/modules/file/enums/errors.enum';
