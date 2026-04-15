@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { FindOptionsSelect, In, Repository } from 'typeorm';
+import { FindOptionsSelect, Repository } from 'typeorm';
 import { Category } from '@/modules/category/entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoryDto } from '@/modules/category/dto/create-category.dto';
@@ -42,10 +42,6 @@ export class CategoryService {
       select,
       relations: { books: withBooks },
     });
-  }
-
-  async getCategoriesByIds(ids: number[]): Promise<Category[]> {
-    return await this.categoryRepository.find({ where: { id: In(ids) } });
   }
 
   async getCategoryById(id: number): Promise<Category | null> {
