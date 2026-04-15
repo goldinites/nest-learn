@@ -16,6 +16,9 @@ export class Book {
   @Column({ length: 255 })
   title: string;
 
+  @Column({ nullable: true })
+  description: string;
+
   @Column({ length: 255, nullable: true })
   imageUrl: string;
 

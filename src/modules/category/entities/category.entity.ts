@@ -9,7 +9,7 @@ export class Category {
   @Column({ length: 255, unique: true })
   title: string;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ nullable: true })
   description: string;
 
   @Column({ length: 255, nullable: true })
