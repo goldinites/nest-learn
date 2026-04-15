@@ -8,7 +8,7 @@ export type BookResponse = {
   stockCount: number;
   rating: number;
   price: number;
-  genre: string;
+  genre?: string;
 };
 
 export type GetBooksResponse = {
