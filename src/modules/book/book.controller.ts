@@ -136,7 +136,6 @@ export class BookController {
   }
 
   @Post('review/:id')
-  @Permissions(Roles.ADMIN, Roles.USER)
   async addReview(
     @CurrentUser() { userId }: AuthUser,
     @Param('id', ParseIntPipe) id: number,
@@ -148,7 +147,6 @@ export class BookController {
   }
 
   @Delete('review/:id')
-  @Permissions(Roles.ADMIN, Roles.USER)
   async deleteReview(
     @CurrentUser() { userId }: AuthUser,
     @Param('id', ParseIntPipe) id: number,
