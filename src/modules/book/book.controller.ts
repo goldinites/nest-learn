@@ -35,6 +35,10 @@ import { UploadType } from '@/modules/file/enums/upload-type.enum';
 import { FilesUploadInterceptor } from '@/modules/file/interceptors/file-upload.interceptor';
 import { RequiredFilePipe } from '@/modules/file/pipes/required-file.pipe';
 import { prepareFileMetadata } from '@/modules/file/utils/prepare-metadata.util';
+import { CurrentUser } from '@/modules/auth/decorators/current-user.decorator';
+import type { AuthUser } from '@/modules/auth/types/auth-user.type';
+import { AddReviewDto } from '@/modules/book/dto/add-review.dto';
+import { ReviewService } from '@/modules/book/services/review.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Permissions(Roles.ADMIN)
@@ -42,6 +46,7 @@ import { prepareFileMetadata } from '@/modules/file/utils/prepare-metadata.util'
 export class BookController {
   constructor(
     private readonly bookService: BookService,
+    private readonly reviewService: ReviewService,
     private readonly fileService: FileService,
   ) {}
 
@@ -122,5 +127,14 @@ export class BookController {
   @Delete(':id')
   async deleteBook(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.bookService.deleteBook(id);
+  }
+
+  @Post('review/:id')
+  async addReview(
+    @CurrentUser() { userId }: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payload: AddReviewDto,
+  ) {
+    return await this.reviewService.addReview(userId, id, payload);
   }
 }

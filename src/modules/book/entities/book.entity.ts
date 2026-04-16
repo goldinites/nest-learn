@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { Category } from '@/modules/category/entities/category.entity';
+import { Review } from '@/modules/book/entities/review.entity';
 
 @Entity()
 export class Book {
@@ -33,6 +35,9 @@ export class Book {
 
   @ManyToOne(() => Category)
   category: Category;
+
+  @OneToMany(() => Review, (review) => review.book, { cascade: true })
+  reviews: Review[];
 
   @Column({ length: 255 })
   language: string;

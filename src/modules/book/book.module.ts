@@ -5,11 +5,17 @@ import { Book } from '@/modules/book/entities/book.entity';
 import { BookController } from '@/modules/book/book.controller';
 import { FileModule } from '@/modules/file/file.module';
 import { CategoryModule } from '@/modules/category/category.module';
+import { Review } from '@/modules/book/entities/review.entity';
+import { ReviewService } from '@/modules/book/services/review.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Book]), CategoryModule, FileModule],
+  imports: [
+    TypeOrmModule.forFeature([Book, Review]),
+    CategoryModule,
+    FileModule,
+  ],
   controllers: [BookController],
-  providers: [BookService],
+  providers: [BookService, ReviewService],
   exports: [BookService],
 })
 export class BookModule {}
