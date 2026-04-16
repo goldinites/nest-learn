@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   OneToOne,
@@ -13,6 +14,9 @@ import { OrderStatus } from '@/modules/order/enums/status.enum';
 import { OrderItem } from '@/modules/order/entities/order-item.entity';
 
 @Entity()
+@Index(['user'])
+@Index(['status'])
+@Index(['createdAt'])
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,6 +11,9 @@ import { Book } from '@/modules/book/entities/book.entity';
 import { User } from '@/modules/user/entities/user.entity';
 
 @Entity()
+@Index(['user'])
+@Index(['book'])
+@Index(['createdAt'])
 export class Review {
   @PrimaryGeneratedColumn()
   id: number;

@@ -6,11 +6,13 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Category } from '@/modules/category/entities/category.entity';
 import { Review } from '@/modules/book/entities/review.entity';
 
 @Entity()
+@Index(['author', 'genre', 'language', 'createdAt'])
 export class Book {
   @PrimaryGeneratedColumn()
   id: number;

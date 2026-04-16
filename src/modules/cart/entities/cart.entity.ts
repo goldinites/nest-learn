@@ -1,6 +1,7 @@
 import {
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   OneToOne,
@@ -11,6 +12,7 @@ import { User } from '@/modules/user/entities/user.entity';
 import { CartItem } from '@/modules/cart/entities/cart-item.entity';
 
 @Entity()
+@Index(['user'])
 export class Cart {
   @PrimaryGeneratedColumn()
   id: number;

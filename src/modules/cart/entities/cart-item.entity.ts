@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,6 +11,8 @@ import { Cart } from './cart.entity';
 import { Book } from '@/modules/book/entities/book.entity';
 
 @Entity()
+@Index(['cart'])
+@Index(['book'])
 export class CartItem {
   @PrimaryGeneratedColumn()
   id: number;
