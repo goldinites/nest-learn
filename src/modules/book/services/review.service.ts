@@ -36,7 +36,6 @@ export class ReviewService {
 
       const book = await bookRepository.findOne({
         where: { id: bookId },
-        relations: { reviews: true },
       });
 
       if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
@@ -52,7 +51,14 @@ export class ReviewService {
 
       const result = await reviewRepository.save(review);
 
-      const bookRating = this.calculateAverageRating([...book.reviews, review]);
+      const updatedBook = await bookRepository.findOne({
+        where: { id: bookId },
+        relations: { reviews: true },
+      });
+
+      if (!updatedBook) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+      const bookRating = this.calculateAverageRating(updatedBook.reviews);
 
       const { affected } = await bookRepository.update(bookId, {
         rating: bookRating,

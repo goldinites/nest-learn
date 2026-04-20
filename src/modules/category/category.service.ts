@@ -45,8 +45,15 @@ export class CategoryService {
     });
   }
 
-  async getCategoryById(id: number): Promise<Category | null> {
-    return await this.categoryRepository.findOneBy({ id });
+  async getCategoryById(
+    id: number,
+    select?: FindOptionsSelect<Category>,
+  ): Promise<Category | null> {
+    return await this.categoryRepository.findOne({
+      where: { id },
+      relations: { books: Boolean(select?.books) },
+      select,
+    });
   }
 
   async createCategory(payload: CreateCategoryDto): Promise<Category> {
@@ -75,9 +82,14 @@ export class CategoryService {
   }
 
   async deleteCategory(id: number): Promise<void> {
-    const category = await this.getCategoryById(id);
+    const category = await this.getCategoryById(id, { books: true });
 
     if (!category) throw new NotFoundException(CategoryErrors.NOT_FOUND);
+
+    if (category.books.length)
+      throw new BadRequestException(
+        CategoryErrors.CANNOT_DELETE_CATEGORY_WITH_BOOKS,
+      );
 
     await this.categoryRepository.remove(category);
   }

@@ -7,9 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from '@/modules/book/entities/book.entity';
 import {
   DataSource,
+  EntityManager,
   FindOptionsSelect,
   FindOptionsWhere,
   ILike,
+  In,
   Repository,
 } from 'typeorm';
 import { GetBookReqDto } from '@/modules/book/dto/get-book.dto';
@@ -111,12 +113,15 @@ export class BookService {
         category,
       });
 
-      await manager.increment(
+      const { affected } = await manager.increment(
         Category,
         { id: categoryId },
         BOOKS_COUNT_PROPERTY,
         1,
       );
+
+      if (affected === 0)
+        throw new BadRequestException(CategoryErrors.NOT_UPDATED);
 
       return await bookRepository.save(book);
     });
@@ -132,7 +137,7 @@ export class BookService {
       const categoryIds = [...new Set(payload.map((item) => item.categoryId))];
 
       const categories = await categoryRepository.find({
-        where: categoryIds.map((id) => ({ id })),
+        where: { id: In(categoryIds) },
       });
 
       const categoryMap = new Map(
@@ -170,6 +175,33 @@ export class BookService {
     });
   }
 
+  private async updateCategoryBooksCount(
+    manager: EntityManager,
+    category: Category,
+    categoryId?: number,
+    previousCategoryId?: number,
+  ) {
+    if (categoryId !== undefined && previousCategoryId !== category?.id) {
+      if (previousCategoryId !== undefined) {
+        await manager.decrement(
+          Category,
+          { id: previousCategoryId },
+          BOOKS_COUNT_PROPERTY,
+          1,
+        );
+      }
+
+      if (category?.id !== undefined) {
+        await manager.increment(
+          Category,
+          { id: category.id },
+          BOOKS_COUNT_PROPERTY,
+          1,
+        );
+      }
+    }
+  }
+
   async updateBook(id: number, payload: UpdateBookDto): Promise<Book | null> {
     return await this.dataSource.transaction(async (manager) => {
       const bookRepository = manager.getRepository(Book);
@@ -187,6 +219,13 @@ export class BookService {
       let category: Category | null = book.category;
       const previousCategoryId = book.category?.id;
 
+      await this.updateCategoryBooksCount(
+        manager,
+        category,
+        categoryId,
+        previousCategoryId,
+      );
+
       if (categoryId !== undefined) {
         category = await categoryRepository.findOneBy({ id: categoryId });
 
@@ -200,29 +239,8 @@ export class BookService {
 
       if (affected === 0) throw new BadRequestException(BookErrors.NOT_UPDATED);
 
-      if (categoryId !== undefined && previousCategoryId !== category?.id) {
-        if (previousCategoryId !== undefined) {
-          await manager.decrement(
-            Category,
-            { id: previousCategoryId },
-            BOOKS_COUNT_PROPERTY,
-            1,
-          );
-        }
-
-        if (category?.id !== undefined) {
-          await manager.increment(
-            Category,
-            { id: category.id },
-            BOOKS_COUNT_PROPERTY,
-            1,
-          );
-        }
-      }
-
       const updated: Book | null = await bookRepository.findOne({
         where: { id },
-        relations: { category: true },
       });
 
       if (!updated) throw new NotFoundException(BookErrors.NOT_FOUND);
