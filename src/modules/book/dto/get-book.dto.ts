@@ -19,6 +19,7 @@ export const BOOK_SORT_FIELDS = [
   'price',
   'createdAt',
   'purchasesCount',
+  'publishedYear',
 ] as const;
 
 export type BookSortField = (typeof BOOK_SORT_FIELDS)[number];

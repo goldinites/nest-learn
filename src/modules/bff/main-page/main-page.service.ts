@@ -15,7 +15,7 @@ export class MainPageService {
   ) {}
   private async getNewestBooks(): Promise<BookResponse[]> {
     const [content] = await this.bookService.getBooks({
-      field: 'createdAt',
+      field: 'publishedYear',
       direction: 'DESC',
       limit: 12,
     });

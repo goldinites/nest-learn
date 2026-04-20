@@ -12,7 +12,7 @@ import { Category } from '@/modules/category/entities/category.entity';
 import { Review } from '@/modules/book/entities/review.entity';
 
 @Entity()
-@Index(['author', 'genre', 'language', 'createdAt'])
+@Index(['author', 'genre', 'language', 'createdAt', 'publishedYear'])
 export class Book {
   @PrimaryGeneratedColumn()
   id: number;
