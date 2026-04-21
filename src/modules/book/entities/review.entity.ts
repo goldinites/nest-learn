@@ -17,7 +17,7 @@ export class Review {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   text: string;
 
   @Column({ type: 'numeric', precision: 3, scale: 1, default: 0 })

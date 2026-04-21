@@ -38,8 +38,9 @@ export class CreateBookDto {
   language: string;
 
   @IsString()
+  @IsOptional()
   @Type(() => String)
-  description: string;
+  description?: string;
 
   @Type(() => Number)
   @IsInt()

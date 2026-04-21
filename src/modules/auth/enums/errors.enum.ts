@@ -1,4 +1,5 @@
 export enum AuthErrors {
+  REGISTER_FAILED = 'Register failed',
   USER_ALREADY_EXISTS = 'User already exists',
   WRONG_CREDENTIALS = 'Wrong credentials',
   SECRET_KEY_NOT_DEFINED = 'Secret key not defined',

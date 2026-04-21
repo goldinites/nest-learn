@@ -24,7 +24,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() payload: RegisterDto): Promise<UserResponse> {
+  async register(@Body() payload: RegisterDto): Promise<SignInResponse> {
     return await this.authService.register(payload);
   }
 

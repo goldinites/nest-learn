@@ -36,7 +36,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async register(payload: RegisterDto): Promise<UserResponse> {
+  async register(payload: RegisterDto): Promise<SignInResponse> {
     const existingUser: User | null = await this.userService.getUserByEmail(
       payload.email,
     );
@@ -44,9 +44,16 @@ export class AuthService {
     if (existingUser)
       throw new ConflictException(AuthErrors.USER_ALREADY_EXISTS);
 
-    const newUser: User = await this.userService.createUser(payload);
+    try {
+      await this.userService.createUser(payload);
 
-    return mapUserToResponse(newUser);
+      return await this.signIn({
+        email: payload.email,
+        password: payload.password,
+      });
+    } catch {
+      throw new BadRequestException(AuthErrors.REGISTER_FAILED);
+    }
   }
 
   private async generateTokens(user: User): Promise<AuthTokens> {

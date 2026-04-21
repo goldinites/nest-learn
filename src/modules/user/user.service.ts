@@ -53,7 +53,11 @@ export class UserService {
       password: hashedPassword,
     });
 
-    return await this.userRepository.save(user);
+    const result = await this.userRepository.save(user);
+
+    if (!result) throw new BadRequestException(UserErrors.NOT_CREATED);
+
+    return result;
   }
 
   async updateUser(
