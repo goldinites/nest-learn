@@ -11,8 +11,7 @@ import { Order } from '@/modules/order/entities/order.entity';
 import { Book } from '@/modules/book/entities/book.entity';
 
 @Entity()
-@Index(['order'])
-@Index(['book'])
+@Index(['order', 'book'])
 export class OrderItem {
   @PrimaryGeneratedColumn()
   id: number;

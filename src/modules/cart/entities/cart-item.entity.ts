@@ -11,8 +11,7 @@ import { Cart } from './cart.entity';
 import { Book } from '@/modules/book/entities/book.entity';
 
 @Entity()
-@Index(['cart'])
-@Index(['book'])
+@Index(['cart', 'book'])
 export class CartItem {
   @PrimaryGeneratedColumn()
   id: number;
