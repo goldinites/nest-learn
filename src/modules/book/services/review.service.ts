@@ -35,6 +35,14 @@ export class ReviewService {
       const bookRepository = manager.getRepository(Book);
       const reviewRepository = manager.getRepository(Review);
 
+      const existingReview = await reviewRepository.findOne({
+        where: { user: { id: userId }, book: { id: bookId } },
+      });
+
+      if (existingReview) {
+        throw new BadRequestException(ReviewErrors.ALREADY_EXISTS);
+      }
+
       const user = await userRepository.findOneBy({ id: userId });
 
       if (!user) throw new NotFoundException(UserErrors.NOT_FOUND);
@@ -44,14 +52,6 @@ export class ReviewService {
       });
 
       if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
-
-      const existingReview = await reviewRepository.findOne({
-        where: { user: { id: userId }, book: { id: bookId } },
-      });
-
-      if (existingReview) {
-        throw new BadRequestException(ReviewErrors.ALREADY_EXISTS);
-      }
 
       const { text, rating } = payload;
 

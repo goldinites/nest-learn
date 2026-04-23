@@ -107,6 +107,7 @@ export class CartService {
     if (quantity <= 0) return await this.deleteItemFromCart(userId, bookId);
 
     return this.dataSource.transaction(async (manager) => {
+      const bookRepository = manager.getRepository(Book);
       const cartRepository = manager.getRepository(Cart);
       const cartItemRepository = manager.getRepository(CartItem);
 
@@ -124,6 +125,17 @@ export class CartService {
       });
 
       if (!item) throw new NotFoundException(CartErrors.CART_ITEM_NOT_FOUND);
+
+      const book = await bookRepository.findOne({
+        where: { id: bookId },
+      });
+
+      if (!book) throw new NotFoundException(BookErrors.NOT_FOUND);
+
+      const nextQuantity = item.quantity + quantity;
+
+      if (nextQuantity > book.stockCount)
+        throw new BadRequestException(CartErrors.QUANTITY_NOT_AVAILABLE);
 
       const { affected } = await cartItemRepository.update(item.id, {
         quantity,
